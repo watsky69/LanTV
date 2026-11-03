@@ -1,0 +1,2348 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LanUs HLTV 3.0 — CS2 Stats, Top Players, Player Profiles & Demo Analytics</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        hltv: {
+                            bg: '#1b1f23',
+                            bg2: '#212730',
+                            panel: '#2d3844',
+                            panelDark: '#26303a',
+                            header: '#252d37',
+                            border: '#364250',
+                            borderLight: '#435264',
+                            blue: '#4985c5',
+                            blueBright: '#5596df',
+                            green: '#1ec728',
+                            t: '#d99b26',
+                            ct: '#3b98d4',
+                            text: '#e2e8f0',
+                            muted: '#8795a4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Rajdhani:wght@600;700&display=swap');
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #1b1f23;
+            color: #d6dde5;
+            font-size: 13px;
+        }
+        .font-rajdhani {
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .hltv-box {
+            background-color: #2d3844;
+            border: 1px solid #364250;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+        }
+        .hltv-box-dark {
+            background-color: #242c35;
+            border: 1px solid #364250;
+        }
+        .hltv-row-even {
+            background-color: #2d3844;
+        }
+        .hltv-row-odd {
+            background-color: #26303a;
+        }
+        .hltv-row-hover:hover {
+            background-color: #344150 !important;
+        }
+        .hltv-tab-active {
+            color: #ffffff !important;
+            border-bottom: 3px solid #5596df !important;
+            background-color: rgba(85, 150, 223, 0.08);
+            font-weight: 700;
+        }
+        .hltv-side-active {
+            color: #ffffff;
+            background-color: #344150;
+            border-left: 3px solid #5596df;
+            font-weight: 700;
+        }
+        .hltv-bar-bg {
+            background-color: #1c2229;
+            height: 6px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .hltv-bar-fill {
+            background: linear-gradient(90deg, #3c78b8 0%, #589ce6 100%);
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.35s ease;
+        }
+        .hero-cs2-backdrop {
+            background:
+                radial-gradient(circle at 22% 45%, rgba(217, 155, 38, 0.12), transparent 45%),
+                radial-gradient(circle at 78% 45%, rgba(59, 152, 212, 0.14), transparent 45%),
+                linear-gradient(180deg, #1e252d 0%, #171c22 100%);
+        }
+        .drop-active {
+            border-color: #5596df !important;
+            background-color: rgba(85, 150, 223, 0.12) !important;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1b1f23;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #364250;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- ======================================================================= -->
+    <!-- HLTV TOP HEADER BAR                                                     -->
+    <!-- ======================================================================= -->
+    <header class="bg-[#242c35] border-b border-[#364250] sticky top-0 z-50">
+        <div class="max-w-[1360px] mx-auto px-4 h-14 flex items-center justify-between gap-4">
+            <!-- HLTV-Style Logo -->
+            <div class="flex items-center gap-6">
+                <div onclick="switchMainView('top-players')" class="flex items-center gap-2.5 cursor-pointer select-none">
+                    <div class="w-9 h-9 bg-[#4985c5] flex items-center justify-center rounded-sm shadow">
+                        <i data-lucide="crosshair" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-2xl font-extrabold tracking-tight text-white">LANUS</span>
+                        <span class="text-[11px] font-bold px-1.5 py-0.5 rounded-sm bg-[#364250] text-[#5596df]">HLTV 3.0</span>
+                    </div>
+                </div>
+
+                <!-- Top Menu Links -->
+                <nav class="hidden md:flex items-center h-14 text-xs font-bold uppercase tracking-wider text-[#9aa9b8]">
+                    <button onclick="switchMainView('top-players')" id="top-nav-top-players" class="top-nav-item h-14 px-4 hover:text-white flex items-center gap-1.5 transition hltv-tab-active">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-[#5596df]"></i>
+                        <span>Stats & Top Players</span>
+                    </button>
+                    <button onclick="switchMainView('analyzer')" id="top-nav-analyzer" class="top-nav-item h-14 px-4 hover:text-white flex items-center gap-1.5 transition">
+                        <i data-lucide="cpu" class="w-4 h-4 text-[#1ec728]"></i>
+                        <span>Demo Analyzer (.DEM)</span>
+                    </button>
+                    <button onclick="switchMainView('tournaments')" id="top-nav-tournaments" class="top-nav-item h-14 px-4 hover:text-white flex items-center gap-1.5 transition">
+                        <i data-lucide="trophy" class="w-4 h-4 text-[#d99b26]"></i>
+                        <span>Events & Bo3/Bo5</span>
+                        <span id="navBadgeSeries" class="ml-1 px-1.5 py-0.2 rounded bg-[#1b1f23] text-[10px] text-[#d99b26]">0</span>
+                    </button>
+                    <button onclick="switchMainView('history')" id="top-nav-history" class="top-nav-item h-14 px-4 hover:text-white flex items-center gap-1.5 transition">
+                        <i data-lucide="database" class="w-4 h-4 text-[#5596df]"></i>
+                        <span>Matches DB</span>
+                        <span id="navBadgeMatches" class="ml-1 px-1.5 py-0.2 rounded bg-[#1b1f23] text-[10px] text-[#5596df]">0</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Right Quick Actions (.DEM Upload) -->
+            <div class="flex items-center gap-2">
+                <label class="px-3.5 py-1.5 bg-[#4985c5] hover:bg-[#5596df] text-white rounded-sm text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow transition">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Upload .DEM</span>
+                    <input type="file" id="fileInput" accept=".dem" class="hidden">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- ======================================================================= -->
+    <!-- MAIN PAGE LAYOUT WITH HLTV LEFT SIDEBAR + MAIN CONTENT                  -->
+    <!-- ======================================================================= -->
+    <div class="max-w-[1360px] mx-auto w-full px-4 py-5 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- LEFT SIDEBAR NAVIGATION (Exact HLTV Style from Screenshot 3) -->
+        <aside class="lg:col-span-2 flex flex-col gap-4">
+            <div class="hltv-box rounded-sm overflow-hidden">
+                <div class="bg-[#242c35] px-3 py-2 border-b border-[#364250] text-[11px] font-extrabold uppercase tracking-wider text-[#8795a4]">
+                    NAVIGATION
+                </div>
+                <div class="flex flex-col divide-y divide-[#364250]/60 text-xs">
+                    <button onclick="switchMainView('top-players')" id="side-top-players" class="side-nav-btn text-left px-3 py-2.5 hover:bg-[#344150] transition hltv-side-active flex items-center justify-between">
+                        <span>Players Overview</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-[#8795a4]"></i>
+                    </button>
+                    <div class="bg-[#232b34] flex flex-col text-[11px] text-[#9aa9b8] divide-y divide-[#2f3a46]/50">
+                        <button onclick="openTopPlayersSortedBy('firepower')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Firepower</button>
+                        <button onclick="openTopPlayersSortedBy('entrying')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Entrying</button>
+                        <button onclick="openTopPlayersSortedBy('trading')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Trading</button>
+                        <button onclick="openTopPlayersSortedBy('opening')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Opening</button>
+                        <button onclick="openTopPlayersSortedBy('closing')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Closing</button>
+                        <button onclick="openTopPlayersSortedBy('sniping')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Sniping</button>
+                        <button onclick="openTopPlayersSortedBy('utility')" class="text-left pl-6 pr-3 py-2 hover:text-white hover:bg-[#2d3844] transition">Utility</button>
+                    </div>
+                    <button onclick="switchMainView('analyzer')" id="side-analyzer" class="side-nav-btn text-left px-3 py-2.5 hover:bg-[#344150] transition text-[#9aa9b8]">
+                        Match Analyzer (.DEM)
+                    </button>
+                    <button onclick="switchMainView('tournaments')" id="side-tournaments" class="side-nav-btn text-left px-3 py-2.5 hover:bg-[#344150] transition text-[#9aa9b8]">
+                        Events & Series (Bo3)
+                    </button>
+                    <button onclick="switchMainView('history')" id="side-history" class="side-nav-btn text-left px-3 py-2.5 hover:bg-[#344150] transition text-[#9aa9b8]">
+                        Matches Archive
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Top 10 Players Box (replaces #1 LanUs Rating 3.0) -->
+            <div class="hltv-box rounded-sm p-3 flex flex-col gap-2">
+                <div class="flex items-center justify-between border-b border-[#364250] pb-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-[#d99b26]">⭐ TOP 10 LANUS 3.0</span>
+                    <span class="text-[9px] text-[#8795a4]">Рейтинг</span>
+                </div>
+                <div id="sidebarTopPlayerBox" class="flex flex-col divide-y divide-[#364250]/60 text-xs text-[#9aa9b8]">
+                    Загрузка Топ-10...
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT COLUMN (10 Cols) -->
+        <main class="lg:col-span-10 flex flex-col gap-4">
+
+            <!-- =================================================================== -->
+            <!-- VIEW A: TOP PLAYERS LEADERBOARD (Exact Screenshot 3 Layout)         -->
+            <!-- =================================================================== -->
+            <div id="view-top-players" class="flex flex-col gap-4">
+
+                <!-- Top Filter Dropdowns Bar -->
+                <div class="hltv-box rounded-sm p-3.5 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-[#8795a4] block mb-1">EVENT FILTER</label>
+                        <select id="tpFilterTournament" onchange="loadTopPlayers()" class="w-full bg-[#242c35] border-b-2 border-[#4985c5] px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none">
+                            <option value="">All Events</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-[#8795a4] block mb-1">TIME FILTER</label>
+                        <select class="w-full bg-[#242c35] border-b-2 border-[#435264] px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none">
+                            <option>All Time (Database)</option>
+                            <option>Last 12 months</option>
+                            <option>Last 3 months</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-[#8795a4] block mb-1">OPPONENT RANKING</label>
+                        <select class="w-full bg-[#242c35] border-b-2 border-[#435264] px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none">
+                            <option>All</option>
+                            <option>Top 20</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-[#8795a4] block mb-1">MAP FILTER</label>
+                        <select id="tpFilterMap" onchange="loadTopPlayers()" class="w-full bg-[#242c35] border-b-2 border-[#435264] px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none">
+                            <option value="all">All Maps</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-[#8795a4] block mb-1">VERSION</label>
+                        <select class="w-full bg-[#242c35] border-b-2 border-[#4985c5] px-2.5 py-1.5 text-xs text-white font-semibold focus:outline-none">
+                            <option>LanUs 3.0 (CS2)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Side Filter Tabs: Both sides | CT Side | T Side -->
+                <div class="hltv-box rounded-sm grid grid-cols-3 text-center text-xs font-semibold text-[#9aa9b8]">
+                    <button onclick="setTopPlayersSide('both')" id="tp-side-both" class="tp-side-btn py-2.5 hover:text-white transition hltv-tab-active">Both sides</button>
+                    <button onclick="setTopPlayersSide('ct')" id="tp-side-ct" class="tp-side-btn py-2.5 hover:text-white transition">CT Side</button>
+                    <button onclick="setTopPlayersSide('t')" id="tp-side-t" class="tp-side-btn py-2.5 hover:text-white transition">T Side</button>
+                </div>
+
+                <!-- Section Header: Players + Role Filter -->
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-sm font-bold text-white">Players</h2>
+                        <span id="tpSortBadge" class="hidden px-2 py-0.5 rounded-sm bg-[#4985c5]/20 border border-[#4985c5] text-[11px] text-[#5596df] font-semibold"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-[#8795a4]">
+                        <span>Role</span>
+                        <div class="bg-[#2d3844] border border-[#364250] px-3 py-1 rounded-sm text-white font-semibold flex items-center gap-1.5">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-[#5596df]"></i>
+                            <span>Everyone</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HLTV Top Players Table -->
+                <div class="hltv-box rounded-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-[#242c35] border-b border-[#364250] text-[11px] font-bold text-[#8795a4]">
+                                    <th class="py-2.5 px-3">Player</th>
+                                    <th class="py-2.5 px-3">Teams</th>
+                                    <th class="py-2.5 px-3 text-center">Maps</th>
+                                    <th class="py-2.5 px-3 text-center">Rounds</th>
+                                    <th class="py-2.5 px-3 text-center" title="Разница киллов и смертей в пересчете на 24 раунда">Net Kills /24</th>
+                                    <th class="py-2.5 px-3 text-center" title="Eco-Adjusted Kill & Damage Swing">Eco Swing</th>
+                                    <th class="py-2.5 px-3 text-center" title="Win Probability Round Swing per round">Rnd Swing</th>
+                                    <th class="py-2.5 px-3 text-right">
+                                        <div class="leading-tight">Rating</div>
+                                        <div class="text-[9px] text-[#8795a4] font-normal">3.0</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="topPlayersTableBody" class="divide-y divide-[#364250]/60 text-xs">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- VIEW B: PLAYER PROFILE PAGE (Exact Screenshot 2 Layout)             -->
+            <!-- =================================================================== -->
+            <div id="view-player-profile" class="hidden flex flex-col gap-4">
+
+                <!-- Top Bio Card -->
+                <div class="hltv-box rounded-sm overflow-hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-12">
+                        <!-- Left Portrait Box (HLTV Player Portrait with Photo Upload) -->
+                        <div class="md:col-span-3 bg-gradient-to-b from-[#2f3b48] to-[#1e262f] border-r border-[#364250] p-4 flex flex-col items-center justify-between relative min-h-[265px] overflow-hidden group">
+                            <input type="file" id="playerAvatarFileInput" accept="image/*" class="hidden" onchange="handlePlayerAvatarUpload(this)">
+                            <div class="w-full flex items-center justify-between z-10">
+                                <span class="px-1.5 py-0.5 bg-[#364250]/90 text-[10px] text-[#9aa9b8] rounded-sm font-semibold">Player</span>
+                                <span id="profTeamBadgeSmall" class="text-xs font-bold text-[#5596df]">CS2</span>
+                            </div>
+
+                            <!-- Stylized CS2 Pro Player Avatar / Uploaded Photo -->
+                            <div onclick="document.getElementById('playerAvatarFileInput').click()" title="Нажмите, чтобы загрузить или сменить фото игрока" class="my-2 flex flex-col items-center cursor-pointer relative z-10">
+                                <div class="w-36 h-36 rounded-sm bg-[#1b1f23] border-2 border-[#4985c5] flex items-center justify-center shadow-lg relative overflow-hidden">
+                                    <img id="profAvatarImg" src="" alt="Player Photo" class="hidden w-full h-full object-cover object-top">
+                                    <div id="profAvatarFallback" class="flex flex-col items-center justify-center text-[#5596df]">
+                                        <i data-lucide="user" class="w-16 h-16"></i>
+                                        <span class="text-[10px] text-[#8795a4] mt-1">Нет фото</span>
+                                    </div>
+                                    <div class="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[11px] font-bold gap-1">
+                                        <span>📷 Загрузить фото</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-full flex flex-col gap-1.5 z-10">
+                                <div class="flex items-center gap-1.5 w-full">
+                                    <button onclick="document.getElementById('playerAvatarFileInput').click()" class="flex-1 py-1 bg-[#242c35] hover:bg-[#4985c5] text-[#d6dde5] hover:text-white text-[11px] font-bold rounded-sm border border-[#364250] transition">
+                                        📷 Загрузить фото
+                                    </button>
+                                    <button id="btnDeletePlayerAvatar" onclick="deleteCurrentPlayerAvatar()" class="hidden px-2 py-1 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white text-[11px] font-bold rounded-sm border border-[#e53935]/40 transition" title="Удалить фото">
+                                        ✕
+                                    </button>
+                                </div>
+                                <button onclick="openPlayerStatsView(currentProfilePlayerName)" class="w-full py-1.5 bg-[#364250] hover:bg-[#4985c5] text-white text-xs font-bold rounded-sm border border-[#4b5b6e] transition shadow">
+                                    Player stats
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right Bio Info Rows -->
+                        <div class="md:col-span-9 p-5 flex flex-col justify-between">
+                            <div class="flex items-start justify-between border-b border-[#364250] pb-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span id="profFlagEmoji" class="text-xl select-none">🇷🇺</span>
+                                        <h1 id="profNickname" class="text-2xl font-extrabold text-white tracking-tight">player</h1>
+                                    </div>
+                                    <p id="profRealName" class="text-xs text-[#8795a4] mt-0.5">LanUs Verified CS2 Player • Pro Division</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1.5 bg-[#242c35] border border-[#364250] px-2.5 py-1 rounded-sm">
+                                        <span class="text-[10px] font-bold uppercase text-[#8795a4]">Страна:</span>
+                                        <select id="profCountrySelect" onchange="changePlayerCountry(this.value)" class="bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer">
+                                            <option value="🇷🇺" class="bg-[#242c35]">🇷🇺 Россия</option>
+                                            <option value="🇰🇿" class="bg-[#242c35]">🇰🇿 Казахстан</option>
+                                            <option value="🇺🇦" class="bg-[#242c35]">🇺🇦 Украина</option>
+                                            <option value="🇧🇾" class="bg-[#242c35]">🇧🇾 Беларусь</option>
+                                            <option value="🇺🇿" class="bg-[#242c35]">🇺🇿 Узбекистан</option>
+                                            <option value="🇰🇬" class="bg-[#242c35]">🇰🇬 Кыргызстан</option>
+                                            <option value="🇦🇲" class="bg-[#242c35]">🇦🇲 Армения</option>
+                                            <option value="🇦🇿" class="bg-[#242c35]">🇦🇿 Азербайджан</option>
+                                            <option value="🇪🇪" class="bg-[#242c35]">🇪🇪 Эстония</option>
+                                            <option value="🇱🇻" class="bg-[#242c35]">🇱🇻 Латвия</option>
+                                            <option value="🇱🇹" class="bg-[#242c35]">🇱🇹 Литва</option>
+                                            <option value="🇵🇱" class="bg-[#242c35]">🇵🇱 Польша</option>
+                                            <option value="🇩🇪" class="bg-[#242c35]">🇩🇪 Германия</option>
+                                            <option value="🇫🇷" class="bg-[#242c35]">🇫🇷 Франция</option>
+                                            <option value="🇩🇰" class="bg-[#242c35]">🇩🇰 Дания</option>
+                                            <option value="🇸🇪" class="bg-[#242c35]">🇸🇪 Швеция</option>
+                                            <option value="🇳🇴" class="bg-[#242c35]">🇳🇴 Норвегия</option>
+                                            <option value="🇫🇮" class="bg-[#242c35]">🇫🇮 Финляндия</option>
+                                            <option value="🇧🇦" class="bg-[#242c35]">🇧🇦 Босния</option>
+                                            <option value="🇷🇸" class="bg-[#242c35]">🇷🇸 Сербия</option>
+                                            <option value="🇲🇳" class="bg-[#242c35]">🇲🇳 Монголия</option>
+                                            <option value="🇧🇷" class="bg-[#242c35]">🇧🇷 Бразилия</option>
+                                            <option value="🇺🇸" class="bg-[#242c35]">🇺🇸 США</option>
+                                            <option value="🇨🇦" class="bg-[#242c35]">🇨🇦 Канада</option>
+                                            <option value="🇹🇷" class="bg-[#242c35]">🇹🇷 Турция</option>
+                                            <option value="🇨🇳" class="bg-[#242c35]">🇨🇳 Китай</option>
+                                            <option value="🌍" class="bg-[#242c35]">🌍 Мировой</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="divide-y divide-[#364250]/70 text-xs my-2">
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Steam Account (SteamID64)</span>
+                                    <span id="profSteamBadge" class="text-white font-mono text-[11px]">—</span>
+                                </div>
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Nickname history (Aliases)</span>
+                                    <span id="profAliasesText" class="text-[#d6dde5] font-semibold">—</span>
+                                </div>
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Current team</span>
+                                    <span id="profTeamName" class="text-[#5596df] font-bold flex items-center gap-1.5">Team</span>
+                                </div>
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Maps / Rounds in DB</span>
+                                    <span id="profMapsRounds" class="text-white font-semibold">0 maps (0 rounds)</span>
+                                </div>
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Top 10 Ranking</span>
+                                    <span id="profRankText" class="text-[#5596df] font-bold">Top 10</span>
+                                </div>
+                                <div class="py-2 flex items-center justify-between">
+                                    <span class="text-[#8795a4]">Trophies & Event Medals</span>
+                                    <div id="profAchievementsBadges" class="flex flex-wrap items-center gap-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trophy & Medal Cabinet Strip (like Screenshot 2) -->
+                    <div id="profMedalStrip" class="bg-[#212730] border-t border-[#364250] px-4 py-2.5 flex items-center gap-3 overflow-x-auto">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Sub-navigation tabs: Info | Teams | Matches | Achievements | Trophies -->
+                <div class="hltv-box rounded-sm px-4 flex items-center gap-6 text-xs font-semibold text-[#8795a4] border-b border-[#364250]">
+                    <span class="py-3 hltv-tab-active cursor-pointer">Info</span>
+                    <span onclick="openPlayerStatsView(currentProfilePlayerName)" class="py-3 hover:text-white cursor-pointer transition">Detailed Stats (7 Factors)</span>
+                    <span onclick="openPlayerStatsView(currentProfilePlayerName)" class="py-3 hover:text-white cursor-pointer transition">Matches</span>
+                    <span class="py-3 hover:text-white cursor-pointer transition">Achievements</span>
+                </div>
+
+                <!-- Bottom 2-Column Split: Left = Player Statistics (7 compact bars), Right = Recent Matches -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <!-- Left Col: Compact Rating 3.0 + 7 Role Bars -->
+                    <div class="md:col-span-6 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <h3 id="profStatsTitle" class="text-sm font-bold text-white">Player statistics</h3>
+                            <span id="profStatsSub" class="text-[11px] text-[#8795a4]">(All maps)</span>
+                        </div>
+                        <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                            <div class="flex items-center justify-between border-b border-[#364250] pb-2.5">
+                                <span class="text-xs font-bold text-[#9aa9b8]">Rating 3.0</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-end gap-0.5 h-3.5">
+                                        <span class="w-1 h-2 bg-[#1ec728]"></span>
+                                        <span class="w-1 h-2.5 bg-[#1ec728]"></span>
+                                        <span class="w-1 h-3.5 bg-[#1ec728]"></span>
+                                    </span>
+                                    <span id="profCompactRating" class="text-base font-extrabold text-white">1.34</span>
+                                </div>
+                            </div>
+                            <div id="profCompactBars" class="flex flex-col gap-3">
+                                <!-- Injected via JS -->
+                            </div>
+                            <button onclick="openPlayerStatsView(currentProfilePlayerName)" class="mt-2 w-full py-2 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#5596df] text-xs font-bold rounded-sm transition">
+                                Открыть полный разбор статистики (HLTV Overview) →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Col: Upcoming & Recent Matches -->
+                    <div class="md:col-span-6 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-white">Recent matches</h3>
+                            <span class="text-[11px] text-[#8795a4]">Click match to open scoreboard</span>
+                        </div>
+                        <div id="profRecentMatchesList" class="flex flex-col gap-2">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- VIEW C: PLAYER STATS OVERVIEW & 7 ROLE ATTRIBUTES (Screenshots 1&4) -->
+            <!-- =================================================================== -->
+            <div id="view-player-stats" class="hidden flex flex-col gap-4">
+
+                <!-- Sub-tabs Bar: Overview | Advanced | Matches | Events | Clutches -->
+                <div class="hltv-box rounded-sm px-4 flex flex-wrap items-center justify-between border-b border-[#364250]">
+                    <div class="flex items-center gap-6 text-xs font-semibold text-[#8795a4]">
+                        <span class="py-3 hltv-tab-active cursor-pointer">Overview</span>
+                        <span onclick="toggleAllAttributeDetails(true)" class="py-3 hover:text-white cursor-pointer">Advanced (Expanded)</span>
+                        <span onclick="openPlayerProfileView(currentProfilePlayerName)" class="py-3 hover:text-white cursor-pointer">Player Profile</span>
+                    </div>
+                    <button onclick="switchMainView('top-players')" class="text-xs text-[#5596df] hover:underline font-semibold py-2">
+                        ← Back to Top Players
+                    </button>
+                </div>
+
+                <!-- Hero Gauge Card (Exact Screenshot 1 Design) -->
+                <div class="hltv-box rounded-sm overflow-hidden grid grid-cols-1 md:grid-cols-12">
+                    <!-- Left Player Portrait Card -->
+                    <div class="md:col-span-3 bg-gradient-to-b from-[#313d4b] to-[#1d242c] border-r border-[#364250] p-4 flex flex-col items-center justify-between min-h-[275px]">
+                        <div class="w-full flex items-center justify-between">
+                            <span id="stFlagEmoji" class="text-base">🇷🇺</span>
+                            <span id="stTeamLabel" class="text-xs font-bold text-[#5596df]">TEAM</span>
+                        </div>
+                        <div class="my-2 flex flex-col items-center text-center">
+                            <div onclick="document.getElementById('playerAvatarFileInput').click()" title="Нажмите, чтобы загрузить фото игрока" class="w-28 h-28 rounded-sm bg-[#1b1f23] border-2 border-[#5596df] flex items-center justify-center mb-2.5 shadow-md relative overflow-hidden cursor-pointer">
+                                <img id="stAvatarImg" src="" alt="Player Photo" class="hidden w-full h-full object-cover object-top">
+                                <div id="stAvatarFallback" class="flex items-center justify-center text-[#5596df]">
+                                    <i data-lucide="user-check" class="w-12 h-12"></i>
+                                </div>
+                                <div class="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold">
+                                    📷 Сменить фото
+                                </div>
+                            </div>
+                            <h2 id="stPlayerName" class="text-2xl font-extrabold text-white tracking-tight">donk</h2>
+                            <p id="stPlayerSub" class="text-[11px] text-[#8795a4]">LanUs Rating 3.0 Verified</p>
+                        </div>
+                        <button onclick="openPlayerProfileView(currentProfilePlayerName)" class="w-full py-1.5 bg-[#364250] hover:bg-[#4985c5] text-white text-xs font-bold rounded-sm border border-[#4b5b6e] transition">
+                            Player profile
+                        </button>
+                    </div>
+
+                    <!-- Right Gauge & 6 Core Metrics Box -->
+                    <div class="md:col-span-9 hero-cs2-backdrop p-5 flex flex-col justify-between relative">
+                        <div class="flex items-center justify-end">
+                            <span id="stMapsCountBadge" class="px-2.5 py-1 bg-[#242c35]/90 border border-[#364250] rounded-sm text-[11px] text-[#9aa9b8] font-semibold">
+                                1 map • Show player average ☑
+                            </span>
+                        </div>
+
+                        <!-- Center Gauge Arc + T Rating & CT Rating -->
+                        <div class="flex items-center justify-center gap-8 my-2">
+                            <div class="text-right">
+                                <div id="stTRating" class="text-xl font-extrabold text-[#d99b26]">1.34</div>
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-[#d99b26]/80">T RATING</div>
+                            </div>
+
+                            <!-- Semi-circle Gauge SVG -->
+                            <div class="relative flex flex-col items-center justify-center w-44 h-28">
+                                <svg viewBox="0 0 120 70" class="w-44 h-28 overflow-visible">
+                                    <path d="M 12 60 A 48 48 0 0 1 108 60" fill="none" stroke="#2a3440" stroke-width="7" stroke-linecap="round"/>
+                                    <path id="stGaugeArc" d="M 12 60 A 48 48 0 0 1 108 60" fill="none" stroke="#1ec728" stroke-width="7" stroke-linecap="round" stroke-dasharray="151" stroke-dashoffset="30"/>
+                                </svg>
+                                <div class="absolute bottom-1 flex flex-col items-center">
+                                    <span id="stRatingQuality" class="text-[10px] font-extrabold uppercase text-[#1ec728]">GOOD</span>
+                                    <span id="stMainRating" class="text-3xl font-extrabold text-white leading-none mt-0.5">1.32</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-[#8795a4] mt-1">RATING 3.0</span>
+                                </div>
+                            </div>
+
+                            <div class="text-left">
+                                <div id="stCTRating" class="text-xl font-extrabold text-[#3b98d4]">1.31</div>
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-[#3b98d4]/80">CT RATING</div>
+                            </div>
+                        </div>
+
+                        <!-- 2x3 Metric Grid (ROUND SWING, DPR, KAST, MULTI-KILL, ADR, KPR) -->
+                        <div class="grid grid-cols-3 gap-x-8 gap-y-4 pt-3 border-t border-[#364250]/60 text-center">
+                            <!-- Round Swing -->
+                            <div>
+                                <div id="stMetricSwing" class="text-xl font-extrabold text-white">+2.49%</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">ROUND SWING</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarSwing" class="h-full bg-[#1ec728]" style="width: 78%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#1ec728] text-right mt-0.5">GOOD</div>
+                            </div>
+                            <!-- DPR -->
+                            <div>
+                                <div id="stMetricDpr" class="text-xl font-extrabold text-white">0.67</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">DPR</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarDpr" class="h-full bg-[#d99b26]" style="width: 60%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#d99b26] text-center mt-0.5">OKAY</div>
+                            </div>
+                            <!-- KAST -->
+                            <div>
+                                <div id="stMetricKast" class="text-xl font-extrabold text-white">75.1%</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">KAST</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarKast" class="h-full bg-[#1ec728]" style="width: 75%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#1ec728] text-right mt-0.5">GOOD</div>
+                            </div>
+                            <!-- MULTI-KILL -->
+                            <div>
+                                <div id="stMetricMulti" class="text-xl font-extrabold text-white">20.2%</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">MULTI-KILL</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarMulti" class="h-full bg-[#1ec728]" style="width: 72%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#1ec728] text-right mt-0.5">GOOD</div>
+                            </div>
+                            <!-- ADR -->
+                            <div>
+                                <div id="stMetricAdr" class="text-xl font-extrabold text-white">91.2</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">ADR</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarAdr" class="h-full bg-[#1ec728]" style="width: 85%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#1ec728] text-right mt-0.5">GOOD</div>
+                            </div>
+                            <!-- KPR -->
+                            <div>
+                                <div id="stMetricKpr" class="text-xl font-extrabold text-white">0.87</div>
+                                <div class="text-[10px] font-bold uppercase text-[#8795a4] mb-1">KPR</div>
+                                <div class="w-full h-1 bg-[#2a3440] rounded overflow-hidden">
+                                    <div id="stBarKpr" class="h-full bg-[#1ec728]" style="width: 82%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-[#1ec728] text-right mt-0.5">GOOD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7 Role Attributes Container (Screenshots 1 & 4: Firepower, Entrying, Trading, Opening, Closing, Sniping, Utility) -->
+                <div class="hltv-box-dark rounded-sm p-4 flex flex-col gap-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-[#8795a4]">Side</span>
+                            <div class="inline-flex rounded-sm overflow-hidden border border-[#364250]">
+                                <button onclick="reloadPlayerStatsSide('both')" id="st-side-both" class="st-side-pill px-3 py-1 bg-[#4985c5] text-white font-bold">Both</button>
+                                <button onclick="reloadPlayerStatsSide('ct')" id="st-side-ct" class="st-side-pill px-3 py-1 bg-[#2d3844] text-[#9aa9b8] hover:text-white">Counter-Terrorist</button>
+                                <button onclick="reloadPlayerStatsSide('t')" id="st-side-t" class="st-side-pill px-3 py-1 bg-[#2d3844] text-[#9aa9b8] hover:text-white">Terrorist</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <button onclick="toggleAllAttributeDetails()" class="px-3 py-1 bg-[#2d3844] hover:bg-[#364250] border border-[#435264] rounded-sm text-[#5596df] font-semibold">
+                                Показать / Скрыть все под-метрики
+                            </button>
+                            <span class="text-[#8795a4]">Compared to</span>
+                            <span class="px-2.5 py-1 bg-[#2d3844] border border-[#364250] rounded-sm text-white font-semibold">🎯 Riflers ▾</span>
+                        </div>
+                    </div>
+
+                    <!-- Firepower (Full width top card) -->
+                    <div id="attrCardFirepower"></div>
+
+                    <!-- 2-Column Grid for Entrying, Trading, Opening, Closing, Sniping, Utility -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="attrCardsGrid"></div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- VIEW D: MATCH ANALYZER & .DEM UPLOAD                                -->
+            <!-- =================================================================== -->
+            <div id="view-analyzer" class="hidden flex flex-col gap-4">
+
+                <!-- Upload Context Bar -->
+                <div class="hltv-box rounded-sm p-3.5 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="git-branch" class="w-4 h-4 text-[#5596df]"></i>
+                        <div>
+                            <span class="text-xs font-bold uppercase text-white block">Контекст загрузки .DEM файла</span>
+                            <span class="text-[11px] text-[#8795a4]">Парсинг через ядро LanUs 3.0, автоматическое удаление .dem и запись в SQL БД</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="uploadTournamentSelect" onchange="onUploadTournamentChange()" class="bg-[#242c35] border border-[#364250] rounded-sm px-2.5 py-1.5 text-xs text-white">
+                            <option value="">— Одиночный матч (без турнира) —</option>
+                        </select>
+                        <select id="uploadSeriesSelect" class="bg-[#242c35] border border-[#364250] rounded-sm px-2.5 py-1.5 text-xs text-white">
+                            <option value="">— Без серии (Standalone Map) —</option>
+                        </select>
+                        <select id="uploadMapNumberSelect" class="bg-[#242c35] border border-[#364250] rounded-sm px-2.5 py-1.5 text-xs text-white">
+                            <option value="">Карта: Авто</option>
+                            <option value="1">Карта #1</option>
+                            <option value="2">Карта #2</option>
+                            <option value="3">Карта #3</option>
+                            <option value="4">Карта #4</option>
+                            <option value="5">Карта #5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Status Banner -->
+                <div id="filterBanner" class="hidden hltv-box rounded-sm p-3 border-l-4 border-l-[#5596df] flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-[#5596df]"></i>
+                        <div>
+                            <div id="filterText" class="text-xs font-bold text-white">🧹 Фильтр демки применен</div>
+                            <div id="matchMetaText" class="text-[11px] text-[#8795a4]"></div>
+                        </div>
+                    </div>
+                    <span id="badgeDbId" class="px-2.5 py-1 bg-[#242c35] border border-[#364250] rounded-sm text-[11px] font-bold text-[#1ec728]">Сохранено в БД</span>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingState" class="hidden hltv-box rounded-sm p-10 text-center flex flex-col items-center justify-center gap-3">
+                    <div class="w-12 h-12 rounded-full border-4 border-[#364250] border-t-[#5596df] animate-spin"></div>
+                    <h3 class="text-base font-bold text-white">ПАРСИНГ .DEM ФАЙЛА И РАСЧЕТ LANUS RATING 3.0</h3>
+                    <p id="loadingMsg" class="text-xs text-[#8795a4]">Расчет Eco-Adjustment, Round Swing, клатчей 1vX и запись в базу...</p>
+                </div>
+
+                <!-- Drag & Drop Zone -->
+                <div id="placeholderState" class="hltv-box rounded-sm p-10 text-center border-2 border-dashed border-[#435264] hover:border-[#5596df] transition flex flex-col items-center justify-center gap-3">
+                    <i data-lucide="file-up" class="w-10 h-10 text-[#5596df]"></i>
+                    <h2 class="text-lg font-extrabold text-white">ПЕРЕТАЩИТЕ .DEM ФАЙЛ МАТЧА СЮДА</h2>
+                    <p class="text-xs text-[#8795a4] max-w-md">
+                        После загрузки все 10 игроков матча автоматически появятся в глобальном <b class="text-white">Топ-рейтинге игроков</b> со своими HLTV-профилями.
+                    </p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <button onclick="document.getElementById('fileInput').click()" class="px-5 py-2 bg-[#4985c5] hover:bg-[#5596df] text-white rounded-sm text-xs font-bold transition">
+                            Выбрать .dem файл
+                        </button>
+                        <button onclick="switchMainView('top-players')" class="px-4 py-2 bg-[#242c35] hover:bg-[#344150] border border-[#364250] rounded-sm text-xs font-semibold text-[#d6dde5]">
+                            Открыть Топ Игроков
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loaded Match Content -->
+                <div id="analysisContent" class="hidden flex flex-col gap-4">
+                    <div class="hltv-box rounded-sm p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold uppercase text-[#8795a4]">CS2 MATCH PAGE</span>
+                                <span id="matchSeriesPill" class="hidden px-2 py-0.5 rounded-sm bg-[#4985c5]/20 border border-[#4985c5] text-[#5596df] text-[10px] font-bold"></span>
+                            </div>
+                            <h2 id="matchMapName" class="text-2xl font-extrabold text-white">DE_NUKE</h2>
+                            <p id="matchServerName" class="text-xs text-[#8795a4]">CS2 Server</p>
+                        </div>
+
+                        <div class="flex items-center gap-5">
+                            <div class="text-right">
+                                <div id="team1NameText" class="text-sm font-extrabold text-white uppercase">TEAM 1</div>
+                                <div id="team1StatusText" class="text-[11px] font-bold text-[#8795a4]"></div>
+                            </div>
+                            <div class="px-5 py-2 bg-[#212730] border border-[#364250] rounded-sm flex items-center gap-3">
+                                <span id="scoreTeam1" class="text-3xl font-extrabold text-[#3b98d4]">12</span>
+                                <span class="text-lg font-bold text-[#8795a4]">:</span>
+                                <span id="scoreTeam2" class="text-3xl font-extrabold text-[#d99b26]">16</span>
+                            </div>
+                            <div class="text-left">
+                                <div id="team2NameText" class="text-sm font-extrabold text-white uppercase">TEAM 2</div>
+                                <div id="team2StatusText" class="text-[11px] font-bold text-[#1ec728]"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-end gap-1.5 text-xs">
+                            <span id="metaRounds" class="text-[#8795a4] font-semibold">28 Раундов</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openAssignModal()" class="px-3 py-1 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#5596df] font-semibold rounded-sm transition">
+                                    Привязать к турниру / Bo3
+                                </button>
+                                <button onclick="deleteCurrentMatch()" class="px-3 py-1 bg-[#e53935]/20 hover:bg-[#e53935] border border-[#e53935]/50 text-[#ff6b6b] hover:text-white font-bold rounded-sm transition flex items-center gap-1" title="Удалить этот матч из БД">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    <span>Удалить матч</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MVP & EVPs Podium -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3" id="podiumContainer"></div>
+
+                    <!-- Match Sub-tabs -->
+                    <div class="hltv-box rounded-sm px-4 flex items-center gap-6 text-xs font-semibold text-[#8795a4]">
+                        <button class="tab-btn py-3 hltv-tab-active" data-tab="scoreboard">Scoreboard (Rating 3.0)</button>
+                        <button class="tab-btn py-3 hover:text-white" data-tab="tactics">Clutches & Eco Duels</button>
+                        <button class="tab-btn py-3 hover:text-white" data-tab="timeline">Round History</button>
+                        <button class="tab-btn py-3 hover:text-white" data-tab="export">Export Markdown</button>
+                    </div>
+
+                    <!-- Scoreboard Table -->
+                    <div id="tab-scoreboard" class="tab-content flex flex-col gap-2">
+                        <div class="hltv-box rounded-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-[#242c35] border-b border-[#364250] text-[11px] font-bold text-[#8795a4]">
+                                            <th class="py-2.5 px-3">Player (click for profile)</th>
+                                            <th class="py-2.5 px-3 text-center">Team</th>
+                                            <th class="py-2.5 px-3 text-center">K - D</th>
+                                            <th class="py-2.5 px-3 text-center">±</th>
+                                            <th class="py-2.5 px-3 text-center">ADR</th>
+                                            <th class="py-2.5 px-3 text-center">KAST %</th>
+                                            <th class="py-2.5 px-3 text-center">Clutches</th>
+                                            <th class="py-2.5 px-3 text-center">Eco-Kills (Δ)</th>
+                                            <th class="py-2.5 px-3 text-center">Rnd Swing</th>
+                                            <th class="py-2.5 px-3 text-center text-[#d99b26]">T Rating</th>
+                                            <th class="py-2.5 px-3 text-center text-[#3b98d4]">CT Rating</th>
+                                            <th class="py-2.5 px-3 text-right text-white">Rating 3.0</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scoreboardBody" class="divide-y divide-[#364250]/60"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tactics -->
+                    <div id="tab-tactics" class="tab-content hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="hltv-box rounded-sm p-4 flex flex-col gap-2.5">
+                            <h3 class="text-xs font-bold uppercase text-white border-b border-[#364250] pb-2">Clutches Won (1vX)</h3>
+                            <div id="clutchAnalysisList" class="flex flex-col gap-2"></div>
+                        </div>
+                        <div class="hltv-box rounded-sm p-4 flex flex-col gap-2.5">
+                            <h3 class="text-xs font-bold uppercase text-white border-b border-[#364250] pb-2">Eco-Adjustment Impact</h3>
+                            <div id="ecoAnalysisList" class="flex flex-col gap-2"></div>
+                        </div>
+                        <div class="hltv-box rounded-sm p-4 flex flex-col gap-2.5">
+                            <h3 class="text-xs font-bold uppercase text-white border-b border-[#364250] pb-2">Opening Duels (OK - OD)</h3>
+                            <div id="entryAnalysisList" class="flex flex-col gap-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div id="tab-timeline" class="tab-content hidden hltv-box rounded-sm p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2.5" id="timelineGrid"></div>
+                    </div>
+
+                    <!-- Markdown Export -->
+                    <div id="tab-export" class="tab-content hidden hltv-box rounded-sm p-4 flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-white">HLTV Markdown Report</span>
+                            <button id="btnCopyReport" class="px-3 py-1.5 bg-[#4985c5] text-white text-xs font-bold rounded-sm">
+                                <span id="copyBtnText">Скопировать отчет</span>
+                            </button>
+                        </div>
+                        <textarea id="markdownReportArea" readonly class="w-full h-72 bg-[#1b1f23] border border-[#364250] p-3 font-mono text-xs text-[#d6dde5]"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- VIEW E: TOURNAMENTS & SERIES (Bo1 / Bo3 / Bo5)                      -->
+            <!-- =================================================================== -->
+            <div id="view-tournaments" class="hidden flex flex-col gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                        <h3 class="text-xs font-bold uppercase text-white border-b border-[#364250] pb-2">Create Event / Tournament</h3>
+                        <form id="formCreateTournament" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                            <input type="text" id="tNameInput" required placeholder="Event Name (e.g. LanUs Major)" class="md:col-span-2 bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <input type="text" id="tPrizeInput" placeholder="Prize ($100,000)" class="bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <input type="text" id="tDescInput" placeholder="Description" class="md:col-span-2 bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <button type="submit" class="bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs py-1.5 rounded-sm">+ Create Event</button>
+                        </form>
+                    </div>
+
+                    <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                        <h3 class="text-xs font-bold uppercase text-white border-b border-[#364250] pb-2">Create Match Series (Bo1 / Bo3 / Bo5)</h3>
+                        <form id="formCreateSeries" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                            <select id="sTournamentSelect" class="bg-[#242c35] border border-[#364250] px-2.5 py-1.5 text-xs text-white">
+                                <option value="">Standalone Series</option>
+                            </select>
+                            <input type="text" id="sTitleInput" value="Grand Final" placeholder="Stage" class="bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <select id="sFormatSelect" class="bg-[#242c35] border border-[#364250] px-2.5 py-1.5 text-xs text-[#5596df] font-bold">
+                                <option value="Bo3">Bo3 Series</option>
+                                <option value="Bo5">Bo5 Series</option>
+                                <option value="Bo1">Bo1 Series</option>
+                            </select>
+                            <input type="text" id="sTeam1Input" required placeholder="Team 1" class="bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <input type="text" id="sTeam2Input" required placeholder="Team 2" class="bg-[#242c35] border border-[#364250] px-3 py-1.5 text-xs text-white">
+                            <button type="submit" class="bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs py-1.5 rounded-sm">+ Create Series</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="hubDetailContainer" class="hidden hltv-box rounded-sm p-4 border-l-4 border-l-[#5596df] flex flex-col gap-4"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                        <div class="flex items-center justify-between border-b border-[#364250] pb-2">
+                            <span class="text-xs font-bold uppercase text-white">Events</span>
+                            <span id="tournamentsCountLabel" class="text-[11px] text-[#8795a4]">0</span>
+                        </div>
+                        <div id="tournamentsListContainer" class="flex flex-col gap-2"></div>
+                    </div>
+                    <div class="lg:col-span-2 hltv-box rounded-sm p-4 flex flex-col gap-3">
+                        <div class="flex items-center justify-between border-b border-[#364250] pb-2">
+                            <span class="text-xs font-bold uppercase text-white">Active & Recent Bo3 / Bo5 Series</span>
+                            <span class="text-[11px] text-[#8795a4]">Click series for aggregated stats</span>
+                        </div>
+                        <div id="seriesListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- VIEW F: MATCHES ARCHIVE (DATABASE)                                  -->
+            <!-- =================================================================== -->
+            <div id="view-history" class="hidden flex flex-col gap-4">
+                <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-white uppercase">Results & Parsed Matches Database</h2>
+                        <input type="text" id="historyFilterMap" oninput="loadHistoryView()" placeholder="Filter map (de_nuke...)" class="bg-[#242c35] border border-[#364250] px-3 py-1 text-xs text-white">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-[#242c35] border-b border-[#364250] text-[11px] font-bold text-[#8795a4]">
+                                    <th class="py-2 px-3">ID</th>
+                                    <th class="py-2 px-3">Map</th>
+                                    <th class="py-2 px-3 text-center">Matchup & Score</th>
+                                    <th class="py-2 px-3 text-center">Rounds</th>
+                                    <th class="py-2 px-3 text-center">Match MVP</th>
+                                    <th class="py-2 px-3 text-center">Series</th>
+                                    <th class="py-2 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody" class="divide-y divide-[#364250]/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Assign Match Modal -->
+    <div id="assignModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="hltv-box rounded-sm p-5 w-full max-w-md flex flex-col gap-4 relative">
+            <button onclick="document.getElementById('assignModal').classList.add('hidden')" class="absolute top-3 right-3 text-[#8795a4] hover:text-white">✕</button>
+            <h3 class="text-sm font-bold text-white uppercase">Assign Match to Event / Series</h3>
+            <select id="assignTournamentSelect" class="bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white"></select>
+            <select id="assignSeriesSelect" class="bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white"></select>
+            <input type="number" id="assignMapNumberInput" min="1" max="5" value="1" class="bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+            <button onclick="submitAssignMatch()" class="w-full py-2 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs rounded-sm">Save Assignment</button>
+        </div>
+    </div>
+
+    <!-- Edit Tournament Modal -->
+    <div id="editTournamentModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="hltv-box rounded-sm p-5 w-full max-w-md flex flex-col gap-3.5 relative">
+            <button onclick="document.getElementById('editTournamentModal').classList.add('hidden')" class="absolute top-3 right-3 text-[#8795a4] hover:text-white">✕</button>
+            <h3 class="text-sm font-bold text-white uppercase border-b border-[#364250] pb-2">Редактировать турнир</h3>
+            <input type="hidden" id="editTournamentId">
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Название турнира</label>
+                <input type="text" id="editTournamentName" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Призовой фонд</label>
+                <input type="text" id="editTournamentPrize" placeholder="$50,000" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Описание / Регламент</label>
+                <input type="text" id="editTournamentDesc" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Статус</label>
+                <select id="editTournamentStatus" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+                    <option value="ongoing">Ongoing (Идёт сейчас)</option>
+                    <option value="upcoming">Upcoming (Предстоящий)</option>
+                    <option value="completed">Completed (Завершён)</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 pt-2">
+                <button onclick="submitEditTournament()" class="flex-1 py-2 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs rounded-sm transition">
+                    Сохранить изменения
+                </button>
+                <button onclick="document.getElementById('editTournamentModal').classList.add('hidden')" class="px-4 py-2 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#9aa9b8] text-xs font-semibold rounded-sm">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Series Modal -->
+    <div id="editSeriesModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+        <div class="hltv-box rounded-sm p-5 w-full max-w-md flex flex-col gap-3.5 relative">
+            <button onclick="document.getElementById('editSeriesModal').classList.add('hidden')" class="absolute top-3 right-3 text-[#8795a4] hover:text-white">✕</button>
+            <h3 class="text-sm font-bold text-white uppercase border-b border-[#364250] pb-2">Редактировать серию (Bo1 / Bo3 / Bo5)</h3>
+            <input type="hidden" id="editSeriesId">
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Стадия / Название</label>
+                <input type="text" id="editSeriesTitle" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="text-[11px] text-[#8795a4] block mb-1">Формат</label>
+                <select id="editSeriesFormat" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+                    <option value="Bo3">Bo3</option>
+                    <option value="Bo5">Bo5</option>
+                    <option value="Bo1">Bo1</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[11px] text-[#8795a4] block mb-1">Команда 1</label>
+                    <input type="text" id="editSeriesTeam1" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="text-[11px] text-[#8795a4] block mb-1">Команда 2</label>
+                    <input type="text" id="editSeriesTeam2" class="w-full bg-[#242c35] border border-[#364250] px-3 py-2 text-xs text-white">
+                </div>
+            </div>
+            <div class="flex items-center gap-2 pt-2">
+                <button onclick="submitEditSeries()" class="flex-1 py-2 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs rounded-sm transition">
+                    Сохранить серию
+                </button>
+                <button onclick="document.getElementById('editSeriesModal').classList.add('hidden')" class="px-4 py-2 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#9aa9b8] text-xs font-semibold rounded-sm">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- FRONTEND JAVASCRIPT                                                     -->
+    <!-- ======================================================================= -->
+    <script>
+        let currentMatchData = null;
+        let cachedTournaments = [];
+        let cachedSeries = [];
+        let topPlayersCache = [];
+        let currentTopSide = 'both';
+        let currentSortAttribute = null;
+        let currentProfilePlayerName = null;
+        let currentProfileSide = 'both';
+        let expandAllAttributes = true;
+
+        lucide.createIcons();
+
+        // =====================================================================
+        // VIEW SWITCHING
+        // =====================================================================
+        const ALL_VIEWS = ['top-players', 'player-profile', 'player-stats', 'analyzer', 'tournaments', 'history'];
+
+        function switchMainView(viewName) {
+            ALL_VIEWS.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) target.classList.remove('hidden');
+
+            // Update top nav active state
+            document.querySelectorAll('.top-nav-item').forEach(b => b.classList.remove('hltv-tab-active'));
+            const topBtn = document.getElementById(`top-nav-${viewName === 'player-profile' || viewName === 'player-stats' ? 'top-players' : viewName}`);
+            if (topBtn) topBtn.classList.add('hltv-tab-active');
+
+            // Update left sidebar active state
+            document.querySelectorAll('.side-nav-btn').forEach(b => b.classList.remove('hltv-side-active'));
+            const sideBtn = document.getElementById(`side-${viewName === 'player-profile' || viewName === 'player-stats' ? 'top-players' : viewName}`);
+            if (sideBtn) sideBtn.classList.add('hltv-side-active');
+
+            if (viewName === 'top-players') {
+                loadTopPlayers();
+            } else if (viewName === 'tournaments') {
+                refreshTournamentsAndSeries();
+            } else if (viewName === 'history') {
+                loadHistoryView();
+            }
+        }
+
+        // =====================================================================
+        // TOP PLAYERS LEADERBOARD (Screenshot 3)
+        // =====================================================================
+        function setTopPlayersSide(side) {
+            currentTopSide = side;
+            document.querySelectorAll('.tp-side-btn').forEach(b => b.classList.remove('hltv-tab-active'));
+            document.getElementById(`tp-side-${side}`).classList.add('hltv-tab-active');
+            loadTopPlayers();
+        }
+
+        function openTopPlayersSortedBy(attrKey) {
+            currentSortAttribute = attrKey;
+            switchMainView('top-players');
+        }
+
+        async function loadTopPlayers() {
+            const tId = document.getElementById('tpFilterTournament').value;
+            const mapName = document.getElementById('tpFilterMap').value;
+            const params = new URLSearchParams({ side: currentTopSide });
+            if (tId) params.set('tournament_id', tId);
+            if (mapName && mapName !== 'all') params.set('map_name', mapName);
+
+            try {
+                const res = await fetch('/api/players/top?' + params.toString());
+                const data = await res.json();
+                topPlayersCache = data.players || [];
+
+                const sortBadge = document.getElementById('tpSortBadge');
+                if (currentSortAttribute) {
+                    topPlayersCache.sort((a, b) => (b.attributes?.[currentSortAttribute]?.score || 0) - (a.attributes?.[currentSortAttribute]?.score || 0));
+                    sortBadge.innerText = `Sorted by: ${currentSortAttribute.toUpperCase()} (0-100)`;
+                    sortBadge.classList.remove('hidden');
+                } else {
+                    sortBadge.classList.add('hidden');
+                }
+
+                renderTopPlayersTable(topPlayersCache);
+                updateSidebarFeaturedPlayer(topPlayersCache);
+            } catch (err) {
+                console.error("Failed to load top players:", err);
+            }
+        }
+
+        function updateSidebarFeaturedPlayer(players) {
+            const box = document.getElementById('sidebarTopPlayerBox');
+            if (!players || !players.length) {
+                box.innerHTML = '<div class="py-2 text-[#8795a4]">Нет данных</div>';
+                return;
+            }
+            const top10 = players.slice(0, 10);
+            box.innerHTML = top10.map((p, idx) => {
+                const lookupKey = (p.steam_id || p.player).replace(/'/g, "\\'");
+                const flag = p.country || '🇷🇺';
+                const rColor = getRatingColorClass(p.rating_3);
+                const rankBadge = idx === 0 ? 'text-[#d99b26]' : (idx < 3 ? 'text-[#5596df]' : 'text-[#8795a4]');
+                const trophyIcon = p.trophies_count > 0 ? `<span title="Побед на турнире (Кубков): ${p.trophies_count}">🏆</span>` : '';
+                const mvpIcon = p.mvp_count > 0 ? `<span title="MVP турнира: ${p.mvp_count}">🏅</span>` : '';
+                return `
+                    <div onclick="openPlayerProfileView('${lookupKey}')" class="cursor-pointer hover:bg-[#344150] py-1.5 px-1 rounded-sm transition flex items-center justify-between gap-1">
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span class="font-extrabold ${rankBadge} w-4 text-[11px]">#${idx + 1}</span>
+                            <span>${flag}</span>
+                            <span class="font-bold text-white truncate">${p.player}</span>
+                            ${trophyIcon}${mvpIcon}
+                        </div>
+                        <span class="font-extrabold ${rColor} text-xs shrink-0">${p.rating_3.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getRatingColorClass(val) {
+            if (val >= 1.05) return 'text-[#1ec728]';
+            if (val >= 0.95) return 'text-[#d99b26]';
+            return 'text-[#e53935]';
+        }
+
+        function renderTopPlayersTable(players) {
+            const tbody = document.getElementById('topPlayersTableBody');
+            if (!players.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-[#8795a4]">В базе пока нет игроков. Нажмите кнопку «Upload .DEM» для загрузки матча.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = players.map((p, idx) => {
+                const rowClass = idx % 2 === 0 ? 'hltv-row-even' : 'hltv-row-odd';
+                const ratingClass = getRatingColorClass(p.rating_3);
+                const attrNote = currentSortAttribute
+                    ? `<span class="ml-2 px-1.5 py-0.2 bg-[#4985c5]/20 text-[#5596df] rounded-sm text-[10px] font-bold">${currentSortAttribute}: ${p.attributes[currentSortAttribute].score}/100</span>`
+                    : '';
+                const lookupKey = (p.steam_id || p.player).replace(/'/g, "\\'");
+                const otherAliases = (p.aliases || []).filter(a => a !== p.player);
+                const aliasBadge = otherAliases.length
+                    ? `<span class="px-1.5 py-0.2 bg-[#242c35] border border-[#364250] rounded-sm text-[10px] text-[#8795a4]" title="Прошлые ники: ${otherAliases.join(', ')}">aka ${otherAliases[0]}</span>`
+                    : '';
+                const flag = p.country || '🇷🇺';
+                const miniAvatar = p.avatar_url
+                    ? `<img src="${p.avatar_url}" alt="" class="w-6 h-6 rounded-full object-cover object-top border border-[#4985c5]">`
+                    : '';
+                const trophyPill = p.trophies_count > 0
+                    ? `<span class="px-1.5 py-0.2 bg-[#d99b26]/20 border border-[#d99b26]/50 text-[#d99b26] rounded-sm text-[10px] font-bold" title="Кубков победителя турнира: ${p.trophies_count}">🏆 ${p.trophies_count}</span>`
+                    : '';
+                const mvpPill = p.mvp_count > 0
+                    ? `<span class="px-1.5 py-0.2 bg-[#1ec728]/15 border border-[#1ec728]/40 text-[#1ec728] rounded-sm text-[10px] font-bold" title="Медалей MVP турнира: ${p.mvp_count}">🏅 MVP</span>`
+                    : '';
+
+                return `
+                    <tr class="${rowClass} hltv-row-hover transition">
+                        <td class="py-2.5 px-3 font-bold">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-bold text-[#8795a4] w-5">#${p.rank || (idx + 1)}</span>
+                                ${miniAvatar}
+                                <span class="text-sm">${flag}</span>
+                                <button onclick="openPlayerProfileView('${lookupKey}')" class="text-white hover:text-[#5596df] font-bold text-left">
+                                    ${p.player}
+                                </button>
+                                ${trophyPill}
+                                ${mvpPill}
+                                ${aliasBadge}
+                                ${attrNote}
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3 text-[#9aa9b8] font-semibold">
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-[#5596df]"></span>
+                                ${p.team}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.maps}</td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.rounds}</td>
+                        <td class="py-2.5 px-3 text-center font-semibold text-[#d6dde5]">${p.net_kills_24_str}</td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.eco_swing_str}</td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.rnd_swing_str}</td>
+                        <td class="py-2.5 px-3 text-right font-extrabold ${ratingClass}">${p.rating_3.toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyPlayerAvatarUI(avatarUrl) {
+            const profImg = document.getElementById('profAvatarImg');
+            const profFb = document.getElementById('profAvatarFallback');
+            const delBtn = document.getElementById('btnDeletePlayerAvatar');
+            const stImg = document.getElementById('stAvatarImg');
+            const stFb = document.getElementById('stAvatarFallback');
+
+            if (avatarUrl) {
+                if (profImg) { profImg.src = avatarUrl; profImg.classList.remove('hidden'); }
+                if (profFb) profFb.classList.add('hidden');
+                if (delBtn) delBtn.classList.remove('hidden');
+                if (stImg) { stImg.src = avatarUrl; stImg.classList.remove('hidden'); }
+                if (stFb) stFb.classList.add('hidden');
+            } else {
+                if (profImg) { profImg.src = ''; profImg.classList.add('hidden'); }
+                if (profFb) profFb.classList.remove('hidden');
+                if (delBtn) delBtn.classList.add('hidden');
+                if (stImg) { stImg.src = ''; stImg.classList.add('hidden'); }
+                if (stFb) stFb.classList.remove('hidden');
+            }
+        }
+
+        async function handlePlayerAvatarUpload(inputEl) {
+            const file = inputEl.files && inputEl.files[0];
+            if (!file || !currentProfilePlayerName) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch(`/api/players/${encodeURIComponent(currentProfilePlayerName)}/avatar`, {
+                method: 'POST',
+                body: formData
+            });
+            inputEl.value = '';
+            if (res.ok) {
+                const data = await res.json();
+                applyPlayerAvatarUI(data.avatar_url);
+                loadTopPlayers();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert('Ошибка при загрузке фото: ' + (err.detail || res.statusText));
+            }
+        }
+
+        async function deleteCurrentPlayerAvatar() {
+            if (!currentProfilePlayerName) return;
+            if (!confirm('Удалить фото игрока?')) return;
+            const res = await fetch(`/api/players/${encodeURIComponent(currentProfilePlayerName)}/avatar`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                applyPlayerAvatarUI(null);
+                loadTopPlayers();
+            }
+        }
+
+        async function changePlayerCountry(newFlag) {
+            if (!currentProfilePlayerName || !newFlag) return;
+            const res = await fetch(`/api/players/${encodeURIComponent(currentProfilePlayerName)}/country`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: newFlag })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const flagEl = document.getElementById('profFlagEmoji');
+                const stFlagEl = document.getElementById('stFlagEmoji');
+                if (flagEl) flagEl.innerText = data.country;
+                if (stFlagEl) stFlagEl.innerText = data.country;
+                loadTopPlayers();
+            } else {
+                alert('Не удалось сохранить страну игрока');
+            }
+        }
+
+        // =====================================================================
+        // PLAYER PROFILE VIEW (Screenshot 2)
+        // =====================================================================
+        async function openPlayerProfileView(playerName) {
+            currentProfilePlayerName = playerName;
+            switchMainView('player-profile');
+
+            const res = await fetch(`/api/players/${encodeURIComponent(playerName)}`);
+            if (!res.ok) return;
+            const p = await res.json();
+            currentProfilePlayerName = p.steam_id || p.player;
+            applyPlayerAvatarUI(p.avatar_url);
+
+            const flag = p.country || '🇷🇺';
+            const flagEl = document.getElementById('profFlagEmoji');
+            if (flagEl) flagEl.innerText = flag;
+            const countrySel = document.getElementById('profCountrySelect');
+            if (countrySel) countrySel.value = flag;
+
+            document.getElementById('profNickname').innerText = p.player;
+            document.getElementById('profTeamBadgeSmall').innerText = p.team;
+            document.getElementById('profTeamName').innerText = p.team;
+            document.getElementById('profMapsRounds').innerText = `${p.maps} maps • ${p.rounds} rounds`;
+
+            // Top 10 Ranking ONLY (replaces #1 LanUs Rating 3.0)
+            const rankEl = document.getElementById('profRankText');
+            if (p.is_top_10 || p.rank <= 10) {
+                rankEl.innerHTML = `<span class="px-2 py-0.5 bg-[#4985c5]/20 border border-[#5596df] text-[#5596df] rounded-sm font-extrabold">⭐ Top 10 (#${p.rank} '26)</span>`;
+            } else {
+                rankEl.innerHTML = `<span class="text-[#8795a4]">Вне Top 10 (#${p.rank})</span>`;
+            }
+
+            document.getElementById('profStatsTitle').innerText = `${p.player} statistics`;
+            document.getElementById('profStatsSub').innerText = `(All time • ${p.maps} maps)`;
+            document.getElementById('profCompactRating').innerText = p.rating_3.toFixed(2);
+
+            const steamEl = document.getElementById('profSteamBadge');
+            if (p.steam_id) {
+                steamEl.innerHTML = `<a href="https://steamcommunity.com/profiles/${p.steam_id}" target="_blank" class="text-[#5596df] hover:underline font-mono">${p.steam_id} ↗</a>`;
+                document.getElementById('profRealName').innerText = `SteamID64 Verified (${p.steam_id}) • Статистика привязана к Steam-аккаунту`;
+            } else {
+                steamEl.innerText = 'Не привязан (Legacy)';
+                document.getElementById('profRealName').innerText = `LanUs Verified CS2 Player • Pro Division`;
+            }
+
+            const aliasesEl = document.getElementById('profAliasesText');
+            const allAliases = p.aliases && p.aliases.length ? p.aliases : [p.player];
+            aliasesEl.innerText = allAliases.join(' • ');
+
+            // Trophies (Кубки победителя турнира) + Event MVP (Медаль MVP по итогу всех карт) + EVP
+            const ach = document.getElementById('profAchievementsBadges');
+            const tCount = p.trophies_count || 0;
+            const mvpCount = p.mvp_count || 0;
+            const evpCount = p.evp_count || 0;
+            ach.innerHTML = `
+                <span class="px-2.5 py-0.5 rounded-sm bg-[#d99b26] text-black font-extrabold text-[11px] flex items-center gap-1 shadow">🏆 ${tCount} x Кубок Турнира</span>
+                <span class="px-2.5 py-0.5 rounded-sm bg-[#1ec728]/20 text-[#1ec728] font-extrabold text-[11px] border border-[#1ec728]/50 flex items-center gap-1">🏅 ${mvpCount} x Медаль MVP</span>
+                <span class="px-2.5 py-0.5 rounded-sm bg-[#364250] text-[#d6dde5] font-bold text-[11px] border border-[#4b5b6e]">🥈 ${evpCount} x EVP</span>
+            `;
+
+            // Trophy & Medal cabinet strip (Кубки, Медали MVP, EVP, Top 10, Round Swing)
+            const strip = document.getElementById('profMedalStrip');
+            const trophyItems = (p.trophies_list || []).map(t => `
+                <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#d99b26] shrink-0" title="Победа на турнире/серии (${t.team}, счёт ${t.score})">
+                    <span class="text-base">🏆</span>
+                    <span class="text-xs font-extrabold text-[#d99b26]">Кубок: ${t.title} (${t.score})</span>
+                </div>
+            `).join('');
+            const mvpItems = (p.mvp_list || []).map(m => `
+                <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#1ec728] shrink-0" title="Медаль MVP по общему среднему рейтингу всех карт">
+                    <span class="text-base">🏅</span>
+                    <span class="text-xs font-extrabold text-[#1ec728]">Медаль MVP: ${m.title} (${m.rating})</span>
+                </div>
+            `).join('');
+            const evpItems = (p.evp_list || []).map(e => `
+                <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#435264] shrink-0">
+                    <span class="text-base">🥈</span>
+                    <span class="text-xs font-bold text-[#d6dde5]">EVP: ${e.title} (${e.rating})</span>
+                </div>
+            `).join('');
+            const top10Badge = (p.is_top_10 || p.rank <= 10) ? `
+                <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#5596df]/60 shrink-0">
+                    <span class="text-base">⭐</span>
+                    <span class="text-xs font-bold text-[#5596df]">Top 10 Игрок (#${p.rank})</span>
+                </div>
+            ` : '';
+
+            strip.innerHTML = `
+                ${trophyItems || `
+                    <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#d99b26]/40 shrink-0">
+                        <span class="text-base">🏆</span>
+                        <span class="text-xs font-bold text-[#d99b26]">Кубков: ${tCount}</span>
+                    </div>
+                `}
+                ${mvpItems || `
+                    <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#1ec728]/40 shrink-0">
+                        <span class="text-base">🏅</span>
+                        <span class="text-xs font-bold text-[#1ec728]">Медалей MVP: ${mvpCount}</span>
+                    </div>
+                `}
+                ${evpItems}
+                ${top10Badge}
+                <div class="flex items-center gap-2 px-3 py-1 bg-[#2d3844] rounded-sm border border-[#435264] shrink-0">
+                    <span class="text-base">⚡</span>
+                    <span class="text-xs font-bold text-[#1ec728]">Round Swing: ${p.rnd_swing_str}</span>
+                </div>
+            `;
+
+            // Compact 7 Role Bars
+            const order = ['firepower', 'entrying', 'trading', 'opening', 'closing', 'sniping', 'utility'];
+            const barsContainer = document.getElementById('profCompactBars');
+            barsContainer.innerHTML = order.map(k => {
+                const attr = p.attributes[k];
+                return `
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1">
+                            <span class="font-bold text-[#d6dde5]">${attr.label}</span>
+                            <span class="font-extrabold text-white">${attr.score}<span class="text-[#8795a4] font-normal text-[10px]">/100</span></span>
+                        </div>
+                        <div class="hltv-bar-bg">
+                            <div class="hltv-bar-fill" style="width: ${attr.score}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Recent matches list (with green/red right border like Screenshot 2)
+            const matchesList = document.getElementById('profRecentMatchesList');
+            matchesList.innerHTML = (p.recent_matches || []).map(m => {
+                const borderRight = m.is_win ? 'border-r-4 border-r-[#1ec728]' : 'border-r-4 border-r-[#e53935]';
+                return `
+                    <div onclick="loadMatchFromDb(${m.match_id})" class="hltv-box rounded-sm p-3 ${borderRight} hltv-row-hover cursor-pointer transition flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-white flex items-center gap-2">
+                                <span class="text-[#8795a4]">vs</span>
+                                <span>${m.opponent_team}</span>
+                                <span class="px-1.5 py-0.2 bg-[#242c35] text-[#5596df] text-[10px] rounded-sm uppercase">${m.map_name}</span>
+                            </div>
+                            <div class="text-[11px] text-[#8795a4] mt-0.5">${m.event_name} • K-D: ${m.k_d} • Rating: <b class="text-[#1ec728]">${m.rating_3}</b></div>
+                        </div>
+                        <div class="text-sm font-extrabold text-white font-mono pl-3">
+                            ${m.score}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // =====================================================================
+        // PLAYER STATS OVERVIEW & 7 ROLE ATTRIBUTES (Screenshots 1 & 4)
+        // =====================================================================
+        function reloadPlayerStatsSide(side) {
+            currentProfileSide = side;
+            document.querySelectorAll('.st-side-pill').forEach(b => {
+                b.classList.remove('bg-[#4985c5]', 'text-white', 'font-bold');
+                b.classList.add('bg-[#2d3844]', 'text-[#9aa9b8]');
+            });
+            const active = document.getElementById(`st-side-${side}`);
+            active.classList.add('bg-[#4985c5]', 'text-white', 'font-bold');
+            active.classList.remove('bg-[#2d3844]', 'text-[#9aa9b8]');
+            openPlayerStatsView(currentProfilePlayerName);
+        }
+
+        function toggleAllAttributeDetails(forceOpen) {
+            if (typeof forceOpen === 'boolean') {
+                expandAllAttributes = forceOpen;
+            } else {
+                expandAllAttributes = !expandAllAttributes;
+            }
+            document.querySelectorAll('.attr-metrics-panel').forEach(el => {
+                if (expandAllAttributes) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+        }
+
+        async function openPlayerStatsView(playerName) {
+            currentProfilePlayerName = playerName;
+            switchMainView('player-stats');
+
+            const res = await fetch(`/api/players/${encodeURIComponent(playerName)}?side=${currentProfileSide}`);
+            if (!res.ok) return;
+            const p = await res.json();
+            currentProfilePlayerName = p.steam_id || p.player;
+            applyPlayerAvatarUI(p.avatar_url);
+
+            const stFlagEl = document.getElementById('stFlagEmoji');
+            if (stFlagEl) stFlagEl.innerText = p.country || '🇷🇺';
+
+            document.getElementById('stPlayerName').innerText = p.player;
+            document.getElementById('stPlayerSub').innerText = p.steam_id ? `SteamID64: ${p.steam_id}` : 'LanUs Rating 3.0 Verified';
+            document.getElementById('stTeamLabel').innerText = p.team;
+            document.getElementById('stMapsCountBadge').innerText = `${p.maps} maps (${p.rounds} rounds) • Show player average ☑`;
+
+            document.getElementById('stTRating').innerText = p.t_rating.toFixed(2);
+            document.getElementById('stCTRating').innerText = p.ct_rating.toFixed(2);
+            document.getElementById('stMainRating').innerText = p.rating_3.toFixed(2);
+
+            // Gauge arc calculation (151 total path length)
+            const norm = Math.min(1.0, Math.max(0.15, (p.rating_3 - 0.5) / 1.2));
+            const offset = Math.round(151 * (1 - norm));
+            const arc = document.getElementById('stGaugeArc');
+            arc.setAttribute('stroke-dashoffset', String(offset));
+
+            const qLabel = document.getElementById('stRatingQuality');
+            if (p.rating_3 >= 1.10) {
+                qLabel.innerText = 'GOOD';
+                qLabel.className = 'text-[10px] font-extrabold uppercase text-[#1ec728]';
+                arc.setAttribute('stroke', '#1ec728');
+            } else if (p.rating_3 >= 0.95) {
+                qLabel.innerText = 'OKAY';
+                qLabel.className = 'text-[10px] font-extrabold uppercase text-[#d99b26]';
+                arc.setAttribute('stroke', '#d99b26');
+            } else {
+                qLabel.innerText = 'POOR';
+                qLabel.className = 'text-[10px] font-extrabold uppercase text-[#e53935]';
+                arc.setAttribute('stroke', '#e53935');
+            }
+
+            // 6 Core Metrics
+            document.getElementById('stMetricSwing').innerText = p.rnd_swing_str;
+            document.getElementById('stMetricDpr').innerText = p.dpr.toFixed(2);
+            document.getElementById('stMetricKast').innerText = `${p.kast_pct}%`;
+            document.getElementById('stMetricMulti').innerText = p.multi_kill_pct;
+            document.getElementById('stMetricAdr').innerText = p.adr.toFixed(1);
+            document.getElementById('stMetricKpr').innerText = p.kpr.toFixed(2);
+
+            document.getElementById('stBarSwing').style.width = `${Math.min(100, Math.max(20, 50 + p.rnd_swing * 15))}%`;
+            document.getElementById('stBarDpr').style.width = `${Math.min(100, Math.max(20, (1.0 - p.dpr) * 140))}%`;
+            document.getElementById('stBarKast').style.width = `${Math.min(100, p.kast_pct)}%`;
+            document.getElementById('stBarMulti').style.width = `${Math.min(100, parseFloat(p.multi_kill_pct) * 3.2)}%`;
+            document.getElementById('stBarAdr').style.width = `${Math.min(100, p.adr)}%`;
+            document.getElementById('stBarKpr').style.width = `${Math.min(100, p.kpr * 95)}%`;
+
+            // Render Firepower Card (Full width, 2-column sub-metrics like Screenshot 4)
+            const fp = p.attributes.firepower;
+            document.getElementById('attrCardFirepower').innerHTML = renderAttributeCardHtml('firepower', fp, 'zap', true);
+
+            // Render other 6 Attribute Cards in 2-col grid
+            const otherKeys = [
+                { key: 'entrying', icon: 'log-in' },
+                { key: 'trading', icon: 'repeat' },
+                { key: 'opening', icon: 'crosshair' },
+                { key: 'closing', icon: 'shield' },
+                { key: 'sniping', icon: 'target' },
+                { key: 'utility', icon: 'flame' }
+            ];
+            document.getElementById('attrCardsGrid').innerHTML = otherKeys.map(item =>
+                renderAttributeCardHtml(item.key, p.attributes[item.key], item.icon, false)
+            ).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderAttributeCardHtml(key, attr, iconName, isTwoColMetrics) {
+            const metricsGridClass = isTwoColMetrics ? 'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3' : 'flex flex-col gap-3';
+            const subMetricsHtml = (attr.metrics || []).map(m => `
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-[#9aa9b8]">${m.name}</span>
+                        <span class="font-bold text-white">${m.value}</span>
+                    </div>
+                    <div class="hltv-bar-bg">
+                        <div class="hltv-bar-fill" style="width: ${m.pct}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="hltv-box rounded-sm p-4 flex flex-col gap-3">
+                    <div onclick="this.nextElementSibling.classList.toggle('hidden')" class="cursor-pointer select-none">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="${iconName}" class="w-4 h-4 text-[#8795a4]"></i>
+                                <span class="text-sm font-bold text-white">${attr.label}</span>
+                                <span class="text-[10px] text-[#8795a4] bg-[#242c35] px-1.5 py-0.2 rounded-full">?</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-extrabold text-white">${attr.score}<span class="text-[11px] font-normal text-[#8795a4]">/100</span></span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-[#8795a4]"></i>
+                            </div>
+                        </div>
+                        <div class="hltv-bar-bg h-2">
+                            <div class="hltv-bar-fill" style="width: ${attr.score}%"></div>
+                        </div>
+                    </div>
+                    <div class="attr-metrics-panel ${expandAllAttributes ? '' : 'hidden'} pt-3 border-t border-[#364250] ${metricsGridClass}">
+                        ${subMetricsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // =====================================================================
+        // COUNTERS, SELECTORS & DEMO UPLOADS
+        // =====================================================================
+        async function refreshCountersAndSelectors() {
+            try {
+                const [tRes, sRes, stRes, mRes] = await Promise.all([
+                    fetch('/api/tournaments'),
+                    fetch('/api/series'),
+                    fetch('/api/status'),
+                    fetch('/api/matches')
+                ]);
+                cachedTournaments = await tRes.json();
+                cachedSeries = await sRes.json();
+                const statusData = await stRes.json();
+                const matchesData = await mRes.json();
+
+                document.getElementById('navBadgeSeries').innerText = statusData.series_count ?? cachedSeries.length;
+                document.getElementById('navBadgeMatches').innerText = statusData.matches_count ?? 0;
+
+                const tpMap = document.getElementById('tpFilterMap');
+                const currentMapVal = tpMap.value || 'all';
+                const uniqueMaps = [...new Set((matchesData || []).map(m => m.map_name).filter(Boolean))];
+                tpMap.innerHTML = `<option value="all">All Maps</option>` + uniqueMaps.map(m => `<option value="${m}">${m}</option>`).join('');
+                if (uniqueMaps.includes(currentMapVal)) tpMap.value = currentMapVal;
+
+                populateContextSelectors();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function populateContextSelectors() {
+            const upT = document.getElementById('uploadTournamentSelect');
+            const sT = document.getElementById('sTournamentSelect');
+            const asT = document.getElementById('assignTournamentSelect');
+            const tpT = document.getElementById('tpFilterTournament');
+
+            const tOptions = cachedTournaments.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            upT.innerHTML = `<option value="">— Одиночный матч (без турнира) —</option>` + tOptions;
+            sT.innerHTML = `<option value="">Standalone Series</option>` + tOptions;
+            asT.innerHTML = `<option value="">— Без турнира —</option>` + tOptions;
+            tpT.innerHTML = `<option value="">All Events</option>` + tOptions;
+
+            onUploadTournamentChange();
+
+            const asS = document.getElementById('assignSeriesSelect');
+            asS.innerHTML = `<option value="">— Без серии —</option>` + cachedSeries.map(s =>
+                `<option value="${s.id}">[${s.format}] ${s.team1_name} vs ${s.team2_name} (${s.series_score})</option>`
+            ).join('');
+        }
+
+        function onUploadTournamentChange() {
+            const tId = document.getElementById('uploadTournamentSelect').value;
+            const upS = document.getElementById('uploadSeriesSelect');
+            const filtered = tId ? cachedSeries.filter(s => String(s.tournament_id) === String(tId)) : cachedSeries;
+            upS.innerHTML = `<option value="">— Без серии (Standalone Map) —</option>` + filtered.map(s =>
+                `<option value="${s.id}">[${s.format}] ${s.team1_name} vs ${s.team2_name} (${s.series_score})</option>`
+            ).join('');
+        }
+
+        function getSelectedUploadContextQuery() {
+            const tId = document.getElementById('uploadTournamentSelect').value;
+            const sId = document.getElementById('uploadSeriesSelect').value;
+            const mNum = document.getElementById('uploadMapNumberSelect').value;
+            const params = new URLSearchParams();
+            if (tId) params.set('tournament_id', tId);
+            if (sId) params.set('series_id', sId);
+            if (mNum) params.set('map_number', mNum);
+            const qs = params.toString();
+            return qs ? `?${qs}` : '';
+        }
+
+        // Load initial Top Players and Counters
+        refreshCountersAndSelectors();
+        loadTopPlayers();
+
+        // Match Analyzer Sub-tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('hltv-tab-active'));
+                btn.classList.add('hltv-tab-active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            });
+        });
+
+        async function uploadDemoFile(file) {
+            if (!file) return;
+            switchMainView('analyzer');
+            showLoading(`Парсинг ${file.name}, расчет LanUs 3.0 и сохранение в БД...`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            const tId = document.getElementById('uploadTournamentSelect').value;
+            const sId = document.getElementById('uploadSeriesSelect').value;
+            const mNum = document.getElementById('uploadMapNumberSelect').value;
+            if (tId) formData.append('tournament_id', tId);
+            if (sId) formData.append('series_id', sId);
+            if (mNum) formData.append('map_number', mNum);
+
+            try {
+                const res = await fetch('/api/matches/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok || data.error || data.detail) throw new Error(data.detail || data.error);
+                renderMatch(data);
+                refreshCountersAndSelectors();
+            } catch (err) {
+                alert("Ошибка загрузки: " + err.message);
+                hideLoading();
+            }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            uploadDemoFile(e.target.files[0]);
+            e.target.value = '';
+        });
+
+        const dropZone = document.getElementById('placeholderState');
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.remove('drop-active'); });
+        });
+        dropZone.addEventListener('drop', (e) => {
+            const file = e.dataTransfer?.files?.[0];
+            if (file) uploadDemoFile(file);
+        });
+
+        function showLoading(msg) {
+            document.getElementById('loadingMsg').innerText = msg;
+            document.getElementById('placeholderState').classList.add('hidden');
+            document.getElementById('analysisContent').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+
+        // =====================================================================
+        // RENDER SINGLE MATCH PAGE
+        // =====================================================================
+        function renderMatch(data) {
+            currentMatchData = data;
+            hideLoading();
+            document.getElementById('placeholderState').classList.add('hidden');
+            document.getElementById('filterBanner').classList.remove('hidden');
+            document.getElementById('filterText').innerText = data.filter_message || "Матч загружен из БД";
+            document.getElementById('matchMetaText').innerText = `${data.map_name} • ${data.total_rounds} раундов • Счет ${data.final_score}`;
+            document.getElementById('badgeDbId').innerText = data.match_id ? `Match #${data.match_id}` : 'Saved';
+
+            document.getElementById('matchMapName').innerText = data.map_name.toUpperCase();
+            document.getElementById('matchServerName').innerText = data.server_name || 'CS2 Server';
+            const [s1, s2] = data.final_score.split(':');
+            const score1 = parseInt(s1) || 0;
+            const score2 = parseInt(s2) || 0;
+            document.getElementById('scoreTeam1').innerText = score1;
+            document.getElementById('scoreTeam2').innerText = score2;
+            document.getElementById('team1NameText').innerText = data.team1_name;
+            document.getElementById('team2NameText').innerText = data.team2_name;
+            document.getElementById('team1StatusText').innerText = score1 > score2 ? 'WINNER' : '';
+            document.getElementById('team2StatusText').innerText = score2 > score1 ? 'WINNER' : '';
+            document.getElementById('metaRounds').innerText = `${data.total_rounds} Rounds`;
+
+            renderPodium(data.mvp, data.evps || []);
+            renderScoreboard(data.players || []);
+            renderTactics(data.players || []);
+            renderTimeline(data.round_history || []);
+            generateMarkdown(data);
+
+            document.getElementById('analysisContent').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function renderPodium(mvp, evps) {
+            const container = document.getElementById('podiumContainer');
+            container.innerHTML = '';
+            if (!mvp) return;
+
+            const all = [{ role: '⭐ ТОП ИГРОК КАРТЫ', p: mvp, highlight: true }, ...evps.map((e, i) => ({ role: `ТОП #${i + 2} КАРТЫ`, p: e, highlight: false }))];
+            container.innerHTML = all.map(item => `
+                <div onclick="openPlayerProfileView('${item.p.player}')" class="hltv-box rounded-sm p-3.5 ${item.highlight ? 'border-t-2 border-t-[#5596df]' : ''} cursor-pointer hltv-row-hover transition flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold uppercase ${item.highlight ? 'text-[#5596df]' : 'text-[#8795a4]'}">${item.role}</span>
+                        <span class="text-sm font-extrabold text-[#1ec728]">${item.p.lanus_3}</span>
+                    </div>
+                    <div class="my-2">
+                        <div class="text-base font-extrabold text-white hover:text-[#5596df]">${item.p.country || '🇷🇺'} ${item.p.player}</div>
+                        <div class="text-[11px] text-[#8795a4]">Swing: ${item.p.round_swing_str} • ADR: ${item.p.adr}</div>
+                    </div>
+                    <div class="text-[11px] text-[#9aa9b8] pt-2 border-t border-[#364250] flex justify-between">
+                        <span>K-D: <b>${item.p.k_d}</b></span>
+                        <span>KAST: <b>${item.p.kast_pct}%</b></span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderScoreboard(players) {
+            const tbody = document.getElementById('scoreboardBody');
+            tbody.innerHTML = players.map((p, idx) => {
+                const rowClass = idx % 2 === 0 ? 'hltv-row-even' : 'hltv-row-odd';
+                const diffColor = p.diff > 0 ? 'text-[#1ec728]' : (p.diff < 0 ? 'text-[#e53935]' : 'text-[#8795a4]');
+                const rColor = getRatingColorClass(p.lanus_3);
+                const flag = p.country || '🇷🇺';
+                return `
+                    <tr onclick="openPlayerStatsView('${p.player}')" class="${rowClass} hltv-row-hover cursor-pointer transition">
+                        <td class="py-2.5 px-3 font-bold text-white">${flag} ${p.player}</td>
+                        <td class="py-2.5 px-3 text-center text-[#8795a4]">${p.team}</td>
+                        <td class="py-2.5 px-3 text-center text-[#d6dde5]">${p.k_d}</td>
+                        <td class="py-2.5 px-3 text-center font-bold ${diffColor}">${p.diff_str}</td>
+                        <td class="py-2.5 px-3 text-center text-[#d6dde5]">${p.adr}</td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.kast_pct}%</td>
+                        <td class="py-2.5 px-3 text-center text-[#d99b26] font-semibold">${p.clutches_str}</td>
+                        <td class="py-2.5 px-3 text-center text-[#9aa9b8]">${p.eco_kills_impact}</td>
+                        <td class="py-2.5 px-3 text-center text-[#5596df] font-semibold">${p.round_swing_str}</td>
+                        <td class="py-2.5 px-3 text-center text-[#d99b26] font-bold">${p.t_rating}</td>
+                        <td class="py-2.5 px-3 text-center text-[#3b98d4] font-bold">${p.ct_rating}</td>
+                        <td class="py-2.5 px-3 text-right font-extrabold ${rColor}">${p.lanus_3}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderTactics(players) {
+            document.getElementById('clutchAnalysisList').innerHTML = players.map(p => `
+                <div class="p-2 bg-[#242c35] border border-[#364250] flex justify-between text-xs">
+                    <span class="font-bold text-white">${p.player}</span>
+                    <span class="text-[#d99b26] font-semibold">${p.clutches_str} (${p.clutch_points} pts)</span>
+                </div>
+            `).join('');
+            document.getElementById('ecoAnalysisList').innerHTML = players.map(p => `
+                <div class="p-2 bg-[#242c35] border border-[#364250] flex justify-between text-xs">
+                    <span class="font-bold text-white">${p.player}</span>
+                    <span class="text-[#9aa9b8]">Eco Δ: <b>${p.eco_delta}</b></span>
+                </div>
+            `).join('');
+            document.getElementById('entryAnalysisList').innerHTML = players.map(p => `
+                <div class="p-2 bg-[#242c35] border border-[#364250] flex justify-between text-xs">
+                    <span class="font-bold text-white">${p.player}</span>
+                    <span class="text-[#5596df] font-semibold">OK-OD: ${p.ok_od}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTimeline(history) {
+            document.getElementById('timelineGrid').innerHTML = history.map(r => `
+                <div class="p-2.5 bg-[#242c35] border border-[#364250] rounded-sm text-xs flex flex-col gap-1">
+                    <div class="flex justify-between font-bold">
+                        <span class="text-white">R${r.round_num}</span>
+                        <span class="${r.winner === 'CT' ? 'text-[#3b98d4]' : 'text-[#d99b26]'}">${r.winner} (${r.score})</span>
+                    </div>
+                    <div class="text-[11px] text-[#8795a4] flex justify-between">
+                        <span>Swing MVP:</span>
+                        <b class="text-white">${r.top_swing_player}</b>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // =====================================================================
+        // TOURNAMENTS & SERIES (Bo3 / Bo5)
+        // =====================================================================
+        document.getElementById('formCreateTournament').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/tournaments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('tNameInput').value.trim(),
+                    prize_pool: document.getElementById('tPrizeInput').value.trim() || null,
+                    description: document.getElementById('tDescInput').value.trim() || null,
+                    status: 'ongoing'
+                })
+            });
+            if (res.ok) {
+                document.getElementById('formCreateTournament').reset();
+                refreshTournamentsAndSeries();
+            }
+        });
+
+        document.getElementById('formCreateSeries').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tId = document.getElementById('sTournamentSelect').value;
+            const res = await fetch('/api/series', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tournament_id: tId ? parseInt(tId) : null,
+                    title: document.getElementById('sTitleInput').value.trim() || 'Playoffs',
+                    format: document.getElementById('sFormatSelect').value,
+                    team1_name: document.getElementById('sTeam1Input').value.trim(),
+                    team2_name: document.getElementById('sTeam2Input').value.trim()
+                })
+            });
+            if (res.ok) {
+                const s = await res.json();
+                document.getElementById('sTeam1Input').value = '';
+                document.getElementById('sTeam2Input').value = '';
+                await refreshTournamentsAndSeries();
+                openSeriesHub(s.id);
+            }
+        });
+
+        async function refreshTournamentsAndSeries() {
+            await refreshCountersAndSelectors();
+            document.getElementById('tournamentsCountLabel').innerText = cachedTournaments.length;
+
+            document.getElementById('tournamentsListContainer').innerHTML = cachedTournaments.map(t => {
+                const winBadge = t.winner_team
+                    ? `<span class="px-1.5 py-0.5 bg-[#d99b26]/20 border border-[#d99b26]/60 text-[#d99b26] rounded-sm text-[10px] font-extrabold">🏆 ${t.winner_team}</span>`
+                    : `<span class="text-[10px] uppercase text-[#5596df] font-bold">${t.status}</span>`;
+                return `
+                    <div class="p-3 bg-[#242c35] hover:bg-[#344150] border ${t.winner_team ? 'border-[#d99b26]/60' : 'border-[#364250]'} transition flex justify-between items-center gap-2">
+                        <div onclick="openTournamentHub(${t.id})" class="cursor-pointer flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-bold text-white text-xs hover:text-[#5596df]">${t.name}</span>
+                                ${t.prize_pool ? `<span class="text-[11px] font-bold text-[#1ec728]">${t.prize_pool}</span>` : ''}
+                                ${winBadge}
+                            </div>
+                            <div class="text-[11px] text-[#8795a4] mt-0.5">${t.series_count} series • ${t.matches_count} maps</div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="openEditTournamentModal(${t.id})" class="px-2 py-1 bg-[#2d3844] hover:bg-[#4985c5] text-[#d6dde5] hover:text-white border border-[#435264] rounded-sm text-[11px] font-bold transition" title="Редактировать турнир">✎</button>
+                            <button onclick="deleteTournamentFromDb(${t.id})" class="px-2 py-1 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 rounded-sm text-[11px] font-bold transition" title="Удалить турнир">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || `<div class="text-xs text-[#8795a4] py-4 text-center">Турниров пока нет</div>`;
+
+            document.getElementById('seriesListContainer').innerHTML = cachedSeries.map(s => {
+                const isDone = s.status === 'completed' && s.winner_team;
+                const t1Won = isDone && s.winner_team === s.team1_name;
+                const t2Won = isDone && s.winner_team === s.team2_name;
+                return `
+                    <div class="p-3 bg-[#242c35] hover:bg-[#344150] border ${isDone ? 'border-[#d99b26]/70' : 'border-[#364250]'} transition flex flex-col gap-2">
+                        <div class="flex justify-between items-center text-[10px] font-bold uppercase text-[#8795a4]">
+                            <span onclick="openSeriesHub(${s.id})" class="cursor-pointer hover:text-white flex items-center gap-1.5">
+                                <span>${s.title || s.format} (${s.format})</span>
+                                ${isDone ? `<span class="px-1.5 py-0.2 bg-[#1ec728]/20 text-[#1ec728] border border-[#1ec728]/50 rounded-sm">ЗАВЕРШЕНО</span>` : `<span class="px-1.5 py-0.2 bg-[#4985c5]/20 text-[#5596df] rounded-sm">LIVE</span>`}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="swapSeriesTeams(${s.id})" class="px-1.5 py-0.5 bg-[#2d3844] hover:bg-[#4985c5] text-[#d6dde5] hover:text-white border border-[#435264] rounded-sm text-[10px]" title="Поменять Команду 1 и Команду 2 местами">⇄</button>
+                                <button onclick="openEditSeriesModal(${s.id})" class="px-1.5 py-0.5 bg-[#2d3844] hover:bg-[#4985c5] text-[#d6dde5] hover:text-white border border-[#435264] rounded-sm text-[10px]" title="Редактировать серию">✎</button>
+                                <button onclick="deleteSeriesFromDb(${s.id})" class="px-1.5 py-0.5 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 rounded-sm text-[10px]" title="Удалить серию">✕</button>
+                            </div>
+                        </div>
+                        <div onclick="openSeriesHub(${s.id})" class="cursor-pointer flex justify-between items-center bg-[#1b1f23] px-3 py-2 border border-[#364250]">
+                            <span class="font-bold ${t1Won ? 'text-[#d99b26]' : 'text-white'}">${t1Won ? '🏆 ' : ''}${s.team1_name}</span>
+                            <span class="font-extrabold text-[#1ec728] text-sm px-2">${s.series_score}</span>
+                            <span class="font-bold ${t2Won ? 'text-[#d99b26]' : 'text-white'}">${t2Won ? '🏆 ' : ''}${s.team2_name}</span>
+                        </div>
+                        ${isDone ? `<div class="text-[11px] font-bold text-[#d99b26] flex items-center justify-between px-1"><span>🏆 Победитель ${s.format}: ${s.winner_team}</span><span class="text-[#1ec728]">ПОБЕДА (${s.series_score})</span></div>` : ''}
+                    </div>
+                `;
+            }).join('') || `<div class="text-xs text-[#8795a4] py-4 text-center md:col-span-2">Серий Bo1/Bo3/Bo5 пока нет</div>`;
+        }
+
+        async function swapSeriesTeams(seriesId) {
+            const res = await fetch(`/api/series/${seriesId}/swap_teams`, { method: 'POST' });
+            if (res.ok) {
+                await refreshTournamentsAndSeries();
+                await openSeriesHub(seriesId);
+                loadTopPlayers();
+            }
+        }
+
+        async function openSeriesHub(seriesId) {
+            const res = await fetch(`/api/series/${seriesId}`);
+            if (!res.ok) return;
+            const s = await res.json();
+            const hub = document.getElementById('hubDetailContainer');
+            hub.classList.remove('hidden');
+
+            const isCompleted = s.status === 'completed' && s.winner_team;
+            const winnerBanner = isCompleted ? `
+                <div class="p-3.5 bg-gradient-to-r from-[#d99b26]/20 via-[#242c35] to-[#1ec728]/15 border border-[#d99b26] rounded-sm flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">🏆</span>
+                        <div>
+                            <div class="text-[10px] font-extrabold uppercase tracking-wider text-[#d99b26]">СЕРИЯ ${s.format} ЗАВЕРШЕНА • КУБОК ПРИСУЖДЕН ПОБЕДИТЕЛЯМ</div>
+                            <div class="text-base font-extrabold text-white">ПОБЕДИТЕЛЬ: <span class="text-[#d99b26]">${s.winner_team}</span> (Счёт по картам ${s.series_score})</div>
+                        </div>
+                    </div>
+                    ${s.series_mvp ? `
+                        <div onclick="openPlayerProfileView('${s.series_mvp.steam_id || s.series_mvp.player}')" class="cursor-pointer bg-[#1b1f23] border border-[#1ec728] px-3.5 py-2 rounded-sm flex items-center gap-3 hover:bg-[#2d3844] transition">
+                            <span class="text-xl">🏅</span>
+                            <div>
+                                <div class="text-[10px] font-extrabold uppercase text-[#1ec728]">MVP ВСЕЙ СЕРИИ (СРЕДНИЙ РЕЙТИНГ)</div>
+                                <div class="text-xs font-extrabold text-white">${s.series_mvp.country || '🇷🇺'} ${s.series_mvp.player} • <span class="text-[#1ec728]">${s.series_mvp.lanus_3}</span></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            ` : `
+                <div class="px-3 py-2 bg-[#242c35] border border-[#364250] rounded-sm text-xs text-[#9aa9b8] flex items-center justify-between">
+                    <span>⏳ Серия ${s.format} в процессе (${s.series_score}). Кубок турнира 🏆, медаль MVP 🏅 и EVP 🥈 будут выданы после завершения всех карт серии.</span>
+                </div>
+            `;
+
+            const mapsCards = (s.maps || []).map(m => `
+                <div class="p-3 bg-[#242c35] border border-[#364250] rounded-sm flex items-center justify-between gap-2">
+                    <div onclick="loadMatchFromDb(${m.match_id})" class="cursor-pointer flex-1">
+                        <div class="text-[10px] font-bold uppercase text-[#5596df]">MAP #${m.map_number} • ${m.map_name}</div>
+                        <div class="text-xs font-extrabold text-white mt-0.5">${m.team1_name} <span class="text-[#1ec728] px-1">${m.final_score}</span> ${m.team2_name}</div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="loadMatchFromDb(${m.match_id})" class="px-2 py-1 bg-[#4985c5] text-white text-[11px] font-bold rounded-sm">Open</button>
+                        <button onclick="deleteMatchFromDb(${m.match_id}, ${s.id})" class="px-2 py-1 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 text-[11px] font-bold rounded-sm transition" title="Удалить эту карту из БД">✕</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const evpNames = new Set((s.series_evps || []).map(e => e.player));
+            const rows = (s.aggregated_players || []).map((p, idx) => {
+                const isMvp = isCompleted && s.series_mvp && s.series_mvp.player === p.player;
+                const isEvp = isCompleted && evpNames.has(p.player);
+                const isWinnerTeam = isCompleted && p.team === s.winner_team;
+                const cupBadge = isWinnerTeam ? `<span class="px-1.5 py-0.2 bg-[#d99b26]/20 border border-[#d99b26] text-[#d99b26] rounded-sm text-[10px] font-bold">🏆 Кубок</span>` : '';
+                const medalBadge = isMvp
+                    ? `<span class="px-1.5 py-0.2 bg-[#1ec728]/20 border border-[#1ec728] text-[#1ec728] rounded-sm text-[10px] font-extrabold">🏅 MVP</span>`
+                    : (isEvp ? `<span class="px-1.5 py-0.2 bg-[#364250] border border-[#5596df] text-[#d6dde5] rounded-sm text-[10px] font-bold">🥈 EVP</span>` : '');
+                return `
+                    <tr onclick="openPlayerProfileView('${p.steam_id || p.player}')" class="border-b border-[#364250] hltv-row-hover cursor-pointer">
+                        <td class="py-2 px-3 font-bold text-white flex items-center gap-2">
+                            <span>${p.country || '🇷🇺'} ${p.player}</span>
+                            ${cupBadge}
+                            ${medalBadge}
+                        </td>
+                        <td class="py-2 px-3 text-center text-[#8795a4]">${p.team}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.maps_played}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.k_d}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.adr}</td>
+                        <td class="py-2 px-3 text-center text-[#5596df] font-semibold">${p.round_swing_str}</td>
+                        <td class="py-2 px-3 text-right font-extrabold ${getRatingColorClass(p.lanus_3)}">${p.lanus_3}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            hub.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-[#5596df]">${s.format} SERIES HUB • ${s.title || ''}</span>
+                        <h3 class="text-lg font-extrabold text-white">${s.team1_name} <span class="text-[#1ec728] px-1">(${s.series_score})</span> ${s.team2_name}</h3>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="prepareUploadForSeries(${s.tournament_id || 'null'}, ${s.id}, ${(s.maps?.length || 0) + 1})" class="px-3 py-1.5 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs rounded-sm">
+                            + Upload Map #${(s.maps?.length || 0) + 1} (.DEM)
+                        </button>
+                        <button onclick="swapSeriesTeams(${s.id})" class="px-2.5 py-1.5 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#d6dde5] text-xs font-bold rounded-sm" title="Поменять Команду 1 и Команду 2 местами">
+                            ⇄ Поменять команды
+                        </button>
+                        <button onclick="openEditSeriesModal(${s.id})" class="px-2.5 py-1.5 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#d6dde5] text-xs font-bold rounded-sm">
+                            ✎ Редактировать
+                        </button>
+                        <button onclick="deleteSeriesFromDb(${s.id})" class="px-2.5 py-1.5 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 text-xs font-bold rounded-sm">
+                            🗑️ Удалить серию
+                        </button>
+                    </div>
+                </div>
+                ${winnerBanner}
+                ${mapsCards ? `<div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">${mapsCards}</div>` : ''}
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-[#242c35] border-b border-[#364250] text-[#8795a4]">
+                            <th class="py-2 px-3">Player</th>
+                            <th class="py-2 px-3 text-center">Team</th>
+                            <th class="py-2 px-3 text-center">Maps</th>
+                            <th class="py-2 px-3 text-center">K-D</th>
+                            <th class="py-2 px-3 text-center">ADR</th>
+                            <th class="py-2 px-3 text-center">Rnd Swing</th>
+                            <th class="py-2 px-3 text-right">Avg Rating 3.0</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        async function openTournamentHub(tournamentId) {
+            const res = await fetch(`/api/tournaments/${tournamentId}`);
+            if (!res.ok) return;
+            const t = await res.json();
+            const hub = document.getElementById('hubDetailContainer');
+            hub.classList.remove('hidden');
+
+            const isCompleted = t.status === 'completed' && t.winner_team;
+            const tBanner = isCompleted ? `
+                <div class="p-3.5 bg-gradient-to-r from-[#d99b26]/20 via-[#242c35] to-[#1ec728]/15 border border-[#d99b26] rounded-sm flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">🏆</span>
+                        <div>
+                            <div class="text-[10px] font-extrabold uppercase tracking-wider text-[#d99b26]">ТУРНИР ЗАВЕРШЕН • ЧЕМПИОНЫ ПОЛУЧИЛИ КУБОК</div>
+                            <div class="text-base font-extrabold text-white">ЧЕМПИОН ТУРНИРА: <span class="text-[#d99b26]">${t.winner_team}</span></div>
+                        </div>
+                    </div>
+                    ${t.tournament_mvp ? `
+                        <div onclick="openPlayerProfileView('${t.tournament_mvp.steam_id || t.tournament_mvp.player}')" class="cursor-pointer bg-[#1b1f23] border border-[#1ec728] px-3.5 py-2 rounded-sm flex items-center gap-3 hover:bg-[#2d3844] transition">
+                            <span class="text-xl">🏅</span>
+                            <div>
+                                <div class="text-[10px] font-extrabold uppercase text-[#1ec728]">MVP ТУРНИРА (+ КУБОК & МЕДАЛЬ)</div>
+                                <div class="text-xs font-extrabold text-white">${t.tournament_mvp.country || '🇷🇺'} ${t.tournament_mvp.player} • <span class="text-[#1ec728]">${t.tournament_mvp.lanus_3}</span></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            ` : '';
+
+            const evpSet = new Set((t.tournament_evps || []).map(e => e.player));
+            const rows = (t.player_leaderboard || []).map(p => {
+                const isMvp = isCompleted && t.tournament_mvp && t.tournament_mvp.player === p.player;
+                const isEvp = isCompleted && evpSet.has(p.player);
+                const isWin = isCompleted && p.team === t.winner_team;
+                const cupBadge = isWin ? `<span class="px-1.5 py-0.2 bg-[#d99b26]/20 border border-[#d99b26] text-[#d99b26] rounded-sm text-[10px] font-bold">🏆 Кубок</span>` : '';
+                const medalBadge = isMvp
+                    ? `<span class="px-1.5 py-0.2 bg-[#1ec728]/20 border border-[#1ec728] text-[#1ec728] rounded-sm text-[10px] font-extrabold">🏅 MVP</span>`
+                    : (isEvp ? `<span class="px-1.5 py-0.2 bg-[#364250] border border-[#5596df] text-[#d6dde5] rounded-sm text-[10px] font-bold">🥈 EVP</span>` : '');
+                return `
+                    <tr onclick="openPlayerProfileView('${p.steam_id || p.player}')" class="border-b border-[#364250] hltv-row-hover cursor-pointer">
+                        <td class="py-2 px-3 font-bold text-white flex items-center gap-2">
+                            <span>${p.country || '🇷🇺'} ${p.player}</span>
+                            ${cupBadge}
+                            ${medalBadge}
+                        </td>
+                        <td class="py-2 px-3 text-center text-[#8795a4]">${p.team}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.maps_played}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.k_d}</td>
+                        <td class="py-2 px-3 text-center text-[#d6dde5]">${p.adr}</td>
+                        <td class="py-2 px-3 text-center text-[#5596df] font-semibold">${p.round_swing_str}</td>
+                        <td class="py-2 px-3 text-right font-extrabold ${getRatingColorClass(p.lanus_3)}">${p.lanus_3}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            hub.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#364250] pb-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-[#d99b26]">TOURNAMENT HUB • ${t.status.toUpperCase()} ${t.prize_pool ? `• ${t.prize_pool}` : ''}</span>
+                        <h3 class="text-lg font-extrabold text-white">${t.name}</h3>
+                        ${t.description ? `<p class="text-xs text-[#8795a4] mt-0.5">${t.description}</p>` : ''}
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="document.getElementById('tpFilterTournament').value='${t.id}'; switchMainView('top-players');" class="px-3 py-1.5 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold text-xs rounded-sm">
+                            Открыть в Top Players
+                        </button>
+                        <button onclick="openEditTournamentModal(${t.id})" class="px-3 py-1.5 bg-[#242c35] hover:bg-[#344150] border border-[#364250] text-[#d6dde5] font-bold text-xs rounded-sm">
+                            ✎ Редактировать турнир
+                        </button>
+                        <button onclick="deleteTournamentFromDb(${t.id})" class="px-3 py-1.5 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 font-bold text-xs rounded-sm">
+                            🗑️ Удалить турнир
+                        </button>
+                    </div>
+                </div>
+                ${tBanner}
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-[#242c35] border-b border-[#364250] text-[#8795a4]">
+                            <th class="py-2 px-3">Player</th>
+                            <th class="py-2 px-3 text-center">Team</th>
+                            <th class="py-2 px-3 text-center">Maps</th>
+                            <th class="py-2 px-3 text-center">K-D</th>
+                            <th class="py-2 px-3 text-center">ADR</th>
+                            <th class="py-2 px-3 text-center">Rnd Swing</th>
+                            <th class="py-2 px-3 text-right">Tournament Rating 3.0</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows || `<tr><td colspan="7" class="py-4 text-center text-[#8795a4]">В этом турнире пока нет сыгранных карт</td></tr>`}</tbody>
+                </table>
+            `;
+        }
+
+        function openEditTournamentModal(tournamentId) {
+            const t = cachedTournaments.find(x => x.id === tournamentId);
+            if (!t) return;
+            document.getElementById('editTournamentId').value = t.id;
+            document.getElementById('editTournamentName').value = t.name || '';
+            document.getElementById('editTournamentPrize').value = t.prize_pool || '';
+            document.getElementById('editTournamentDesc').value = t.description || '';
+            document.getElementById('editTournamentStatus').value = t.status || 'ongoing';
+            document.getElementById('editTournamentModal').classList.remove('hidden');
+        }
+
+        async function submitEditTournament() {
+            const tId = document.getElementById('editTournamentId').value;
+            if (!tId) return;
+            const payload = {
+                name: document.getElementById('editTournamentName').value.trim(),
+                prize_pool: document.getElementById('editTournamentPrize').value.trim(),
+                description: document.getElementById('editTournamentDesc').value.trim(),
+                status: document.getElementById('editTournamentStatus').value
+            };
+            const res = await fetch(`/api/tournaments/${tId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                document.getElementById('editTournamentModal').classList.add('hidden');
+                await refreshTournamentsAndSeries();
+                await openTournamentHub(parseInt(tId));
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert("Ошибка при сохранении турнира: " + (err.detail || res.statusText));
+            }
+        }
+
+        async function deleteTournamentFromDb(tournamentId) {
+            const t = cachedTournaments.find(x => x.id === tournamentId);
+            const name = t ? t.name : `#${tournamentId}`;
+            if (!confirm(`Удалить турнир «${name}»?\n(Все сыгранные матчи останутся в общей базе данных как одиночные).`)) {
+                return;
+            }
+            const res = await fetch(`/api/tournaments/${tournamentId}`, { method: 'DELETE' });
+            if (res.ok) {
+                document.getElementById('hubDetailContainer').classList.add('hidden');
+                await refreshTournamentsAndSeries();
+            }
+        }
+
+        function openEditSeriesModal(seriesId) {
+            const s = cachedSeries.find(x => x.id === seriesId);
+            if (!s) return;
+            document.getElementById('editSeriesId').value = s.id;
+            document.getElementById('editSeriesTitle').value = s.title || '';
+            document.getElementById('editSeriesFormat').value = s.format || 'Bo3';
+            document.getElementById('editSeriesTeam1').value = s.team1_name || '';
+            document.getElementById('editSeriesTeam2').value = s.team2_name || '';
+            document.getElementById('editSeriesModal').classList.remove('hidden');
+        }
+
+        async function submitEditSeries() {
+            const sId = document.getElementById('editSeriesId').value;
+            if (!sId) return;
+            const payload = {
+                title: document.getElementById('editSeriesTitle').value.trim(),
+                format: document.getElementById('editSeriesFormat').value,
+                team1_name: document.getElementById('editSeriesTeam1').value.trim(),
+                team2_name: document.getElementById('editSeriesTeam2').value.trim()
+            };
+            const res = await fetch(`/api/series/${sId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                document.getElementById('editSeriesModal').classList.add('hidden');
+                await refreshTournamentsAndSeries();
+                await openSeriesHub(parseInt(sId));
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert("Ошибка при сохранении серии: " + (err.detail || res.statusText));
+            }
+        }
+
+        async function deleteSeriesFromDb(seriesId) {
+            if (!confirm(`Удалить серию #${seriesId}?\n(Сыгранные карты останутся в базе матчей).`)) return;
+            const res = await fetch(`/api/series/${seriesId}`, { method: 'DELETE' });
+            if (res.ok) {
+                document.getElementById('hubDetailContainer').classList.add('hidden');
+                await refreshTournamentsAndSeries();
+            }
+        }
+
+        function prepareUploadForSeries(tournamentId, seriesId, mapNum) {
+            switchMainView('analyzer');
+            if (tournamentId) {
+                document.getElementById('uploadTournamentSelect').value = String(tournamentId);
+                onUploadTournamentChange();
+            }
+            document.getElementById('uploadSeriesSelect').value = String(seriesId);
+            document.getElementById('uploadMapNumberSelect').value = String(Math.min(5, mapNum));
+            document.getElementById('fileInput').click();
+        }
+
+        // =====================================================================
+        // MATCHES DATABASE ARCHIVE & DELETION
+        // =====================================================================
+        async function loadHistoryView() {
+            const mapFilter = document.getElementById('historyFilterMap').value.trim();
+            const qs = mapFilter ? `?map_name=${encodeURIComponent(mapFilter)}` : '';
+            const res = await fetch('/api/matches' + qs);
+            const matches = await res.json();
+            const tbody = document.getElementById('historyTableBody');
+
+            tbody.innerHTML = matches.map((m, idx) => `
+                <tr class="${idx % 2 === 0 ? 'hltv-row-even' : 'hltv-row-odd'} hltv-row-hover">
+                    <td class="py-2.5 px-3 text-[#8795a4]">#${m.id}</td>
+                    <td class="py-2.5 px-3 font-bold text-white uppercase">${m.map_name}</td>
+                    <td class="py-2.5 px-3 text-center font-bold text-white">${m.team1_name} <span class="text-[#5596df] px-1">${m.final_score}</span> ${m.team2_name}</td>
+                    <td class="py-2.5 px-3 text-center text-[#8795a4]">${m.total_rounds}</td>
+                    <td class="py-2.5 px-3 text-center font-bold text-[#1ec728]">${m.mvp_player || '—'} ${m.mvp_rating ? `(${m.mvp_rating})` : ''}</td>
+                    <td class="py-2.5 px-3 text-center text-[#8795a4]">${m.series_id ? `Series #${m.series_id}` : 'Standalone'}</td>
+                    <td class="py-2.5 px-3 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                            <button onclick="loadMatchFromDb(${m.id})" class="px-2.5 py-1 bg-[#4985c5] hover:bg-[#5596df] text-white font-bold rounded-sm transition">Open</button>
+                            <button onclick="deleteMatchFromDb(${m.id})" class="px-2.5 py-1 bg-[#e53935]/20 hover:bg-[#e53935] text-[#ff6b6b] hover:text-white border border-[#e53935]/40 font-bold rounded-sm transition" title="Удалить матч из БД">
+                                Удалить
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="7" class="py-6 text-center text-[#8795a4]">В базе данных нет сохранённых матчей</td></tr>`;
+        }
+
+        async function deleteMatchFromDb(matchId, seriesIdToRefresh = null) {
+            if (!confirm(`Вы уверены, что хотите удалить матч #${matchId} из базы данных?\nСтатистика игроков и счёт серии будут автоматически пересчитаны.`)) {
+                return;
+            }
+            const res = await fetch(`/api/matches/${matchId}`, { method: 'DELETE' });
+            if (res.ok) {
+                if (currentMatchData && currentMatchData.match_id === matchId) {
+                    currentMatchData = null;
+                    document.getElementById('analysisContent').classList.add('hidden');
+                    document.getElementById('filterBanner').classList.add('hidden');
+                    document.getElementById('placeholderState').classList.remove('hidden');
+                }
+                await refreshCountersAndSelectors();
+                await loadTopPlayers();
+                await loadHistoryView();
+                if (seriesIdToRefresh) {
+                    await refreshTournamentsAndSeries();
+                    await openSeriesHub(seriesIdToRefresh);
+                }
+            } else {
+                alert("Не удалось удалить матч из БД.");
+            }
+        }
+
+        async function deleteCurrentMatch() {
+            if (!currentMatchData?.match_id) return;
+            await deleteMatchFromDb(currentMatchData.match_id);
+        }
+
+        async function loadMatchFromDb(matchId) {
+            switchMainView('analyzer');
+            showLoading(`Loading Match #${matchId} from database...`);
+            const res = await fetch(`/api/matches/${matchId}`);
+            const data = await res.json();
+            renderMatch(data);
+        }
+
+        function openAssignModal() {
+            if (!currentMatchData?.match_id) return;
+            populateContextSelectors();
+            document.getElementById('assignModal').classList.remove('hidden');
+        }
+
+        async function submitAssignMatch() {
+            if (!currentMatchData?.match_id) return;
+            const tVal = document.getElementById('assignTournamentSelect').value;
+            const sVal = document.getElementById('assignSeriesSelect').value;
+            const mVal = document.getElementById('assignMapNumberInput').value;
+            const res = await fetch(`/api/matches/${currentMatchData.match_id}/assign`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tournament_id: tVal ? parseInt(tVal) : null,
+                    series_id: sVal ? parseInt(sVal) : null,
+                    map_number: mVal ? parseInt(mVal) : 1
+                })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                document.getElementById('assignModal').classList.add('hidden');
+                renderMatch(updated);
+                refreshCountersAndSelectors();
+            }
+        }
+
+        function generateMarkdown(data) {
+            let md = `### ${data.map_name} — ${data.team1_name} ${data.final_score} ${data.team2_name}\n\n`;
+            md += `| Player | Team | K-D | ADR | KAST% | Swing | Rating 3.0 |\n| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n`;
+            (data.players || []).forEach(p => {
+                md += `| ${p.player} | ${p.team} | ${p.k_d} | ${p.adr} | ${p.kast_pct}% | ${p.round_swing_str} | **${p.lanus_3}** |\n`;
+            });
+            document.getElementById('markdownReportArea').value = md;
+        }
+
+        document.getElementById('btnCopyReport').onclick = () => {
+            const area = document.getElementById('markdownReportArea');
+            area.select();
+            navigator.clipboard.writeText(area.value);
+            document.getElementById('copyBtnText').innerText = "Скопировано!";
+        };
+    </script>
+</body>
+</html>
