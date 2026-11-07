@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏆 LanUs CS2 Analytics (v4.0 PRO) — HLTV Rating 3.0 Analog
 
 Профессиональная система глубокого анализа киберспортивных матчей Counter-Strike 2 (CS2) из `.dem` файлов с расчетом рейтинга **LanUs Rating 3.0** (полный аналог HLTV Rating 3.0).
@@ -59,3 +60,6 @@
 - `templates/index.html` — современный киберспортивный веб-интерфейс (Tailwind CSS, Lucide, Chart.js).
 - `lanus_analyzer.py` — CLI версия для запуска напрямую из терминала (`python lanus_analyzer.py "путь.dem"`).
 - `requirements.txt` — список зависимостей Python.
+=======
+# LanTV
+>>>>>>> 50409cdcc5e06cceedbcaabd977a2c4345fc1d8b
